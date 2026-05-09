@@ -402,7 +402,7 @@ class ApiService {
   }
 
   // High-level uploader: uses multipart for large files
-  async uploadAnySize(file: File, opts: { partSize?: number; partConcurrency?: number; multipartThreshold?: number } = {}): Promise<{ fileUrl: string; bucket?: string; key?: string }>{
+  async uploadAnySize(file: File, opts: { partSize?: number; partConcurrency?: number; multipartThreshold?: number; context?: string; libraryType?: string } = {}): Promise<{ fileUrl: string; bucket?: string; key?: string }>{
     let fileType = file.type;
     if (!fileType) {
       const ext = file.name.split('.').pop()?.toLowerCase();
@@ -434,7 +434,7 @@ class ApiService {
     }
 
     // Multipart
-    const { key, uploadId, listingId } = await this.multipartStart(fileType, file.name, { context: opts.context, libraryType: opts.libraryType });
+    const { key, uploadId } = await this.multipartStart(fileType, file.name, { context: opts.context, libraryType: opts.libraryType });
 
     const totalParts = Math.ceil(file.size / partSize);
     const partsEtags: Array<{ ETag: string; PartNumber: number }> = new Array(totalParts);
