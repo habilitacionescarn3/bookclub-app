@@ -378,10 +378,15 @@ class ApiService {
   }
 
   // Multipart upload helpers
-  async multipartStart(fileType: string, fileName?: string): Promise<{ bucket: string; key: string; uploadId: string }> {
-    const res: AxiosResponse<ApiResponse<{ bucket: string; key: string; uploadId: string }>> = await this.api.post('/upload/multipart/start', { fileType, fileName });
-    if (!res.data.success) throw new Error(res.data.error?.message || 'Failed to start multipart upload');
-    return res.data.data!;
+  async multipartStart(fileType: string, fileName?: string, opts: { context?: string; libraryType?: string } = {}): Promise<{ bucket: string; key: string; uploadId: string; listingId?: string }> {
+    const response: AxiosResponse<ApiResponse<{ bucket: string; key: string; uploadId: string; listingId?: string }>> = await this.api.post('/upload/multipart/start', {
+      fileType,
+      fileName,
+      context: opts.context,
+      libraryType: opts.libraryType,
+    });
+    if (!response.data.success) throw new Error(response.data.error?.message || 'Failed to start multipart upload');
+    return response.data.data!;
   }
 
   async multipartSignPart(params: { key: string; uploadId: string; partNumber: number; contentType?: string }): Promise<{ uploadUrl: string }>{
@@ -429,7 +434,7 @@ class ApiService {
     }
 
     // Multipart
-    const { key, uploadId } = await this.multipartStart(fileType, file.name);
+    const { key, uploadId, listingId } = await this.multipartStart(fileType, file.name, { context: opts.context, libraryType: opts.libraryType });
 
     const totalParts = Math.ceil(file.size / partSize);
     const partsEtags: Array<{ ETag: string; PartNumber: number }> = new Array(totalParts);
