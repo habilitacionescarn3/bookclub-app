@@ -49,7 +49,7 @@ const ManagementItemCard: React.FC<ManagementItemCardProps> = ({ item, onDelete,
             <img src={(item as any).coverImage} alt={item.title} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-2xl opacity-40">
-              {item.category === 'toy' ? '🧸' : item.category === 'tool' ? '🔧' : '📚'}
+              {item.category === 'toy' ? '🧸' : item.category === 'tool' ? '🔧' : item.category === 'clothing' ? '👗' : '📚'}
             </div>
           )}
         </div>
@@ -115,7 +115,7 @@ const ManagementItemCard: React.FC<ManagementItemCardProps> = ({ item, onDelete,
           />
         ) : (
           <div className="text-6xl opacity-40 transform transition-transform group-hover:scale-125 duration-300">
-            {item.category === 'toy' ? '🧸' : item.category === 'tool' ? '🔧' : item.category === 'game' ? '🎮' : '📚'}
+            {item.category === 'toy' ? '🧸' : item.category === 'tool' ? '🔧' : item.category === 'game' ? '🎮' : item.category === 'clothing' ? '👗' : '📚'}
           </div>
         )}
         

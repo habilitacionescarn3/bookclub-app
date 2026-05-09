@@ -442,9 +442,7 @@ class ApiService {
       const partNumber = index + 1;
       const { uploadUrl } = await this.multipartSignPart({ key, uploadId, partNumber, contentType: fileType });
       const putRes = await axios.put(uploadUrl, blob, {
-        headers: {
-          'Content-Type': fileType || 'application/octet-stream'
-        },
+        headers: {},
         timeout: 30 * 60 * 1000, // 30 minutes
         maxBodyLength: Infinity,
         maxContentLength: Infinity,
