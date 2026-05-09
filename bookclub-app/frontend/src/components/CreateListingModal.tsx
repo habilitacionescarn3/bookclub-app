@@ -104,30 +104,39 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ config, onClose
                 );
               }
 
-              const derivedTitle = image.file.name.replace(/\.[^/.]+$/, '').replace(/[_\-.]/g, ' ');
-              const listing = config.libraryType === 'lost_found'
-                ? await withRetry(
-                    () => apiService.createLostFoundItem({
-                      clubId,
-                      title: derivedTitle,
-                      itemType: 'unknown' as LostFoundItemType,
-                      images: uploadResult.fileUrl ? [uploadResult.fileUrl] : [],
-                    }),
-                    'createLostFoundItem'
-                  )
-                : await withRetry(
-                    () => apiService.createToyListing({
-                      coverImage: uploadResult.fileUrl,
-                      status: 'available',
-                      extractFromImage: !isLocal,
-                      s3Bucket: uploadResult.bucket,
-                      s3Key: uploadResult.key,
-                      title: isLocal ? derivedTitle : 'Processing...',
-                      libraryType: config.libraryType === 'all' ? 'toy' : config.libraryType,
-                      userName: user?.name || user?.email || 'Community Member',
-                    }),
-                    'createToyListing'
-                  );
+              let listing;
+              if (uploadResult.listingId) {
+                // Draft already created by upload handler, just fetch it
+                listing = await withRetry(
+                  () => apiService.getBook(uploadResult.listingId!),
+                  'getListing'
+                );
+              } else {
+                const derivedTitle = image.file.name.replace(/\.[^/.]+$/, '').replace(/[_\-.]/g, ' ');
+                listing = config.libraryType === 'lost_found'
+                  ? await withRetry(
+                      () => apiService.createLostFoundItem({
+                        clubId,
+                        title: derivedTitle,
+                        itemType: 'unknown' as LostFoundItemType,
+                        images: uploadResult.fileUrl ? [uploadResult.fileUrl] : [],
+                      }),
+                      'createLostFoundItem'
+                    )
+                  : await withRetry(
+                      () => apiService.createToyListing({
+                        coverImage: uploadResult.fileUrl,
+                        status: 'available',
+                        extractFromImage: !isLocal,
+                        s3Bucket: uploadResult.bucket,
+                        s3Key: uploadResult.key,
+                        title: isLocal ? derivedTitle : 'Processing...',
+                        libraryType: config.libraryType === 'all' ? 'toy' : config.libraryType,
+                        userName: user?.name || user?.email || 'Community Member',
+                      }),
+                      'createToyListing'
+                    );
+              }
               successCount++;
               setUploadProgress(p => ({ ...p, success: p.success + 1 }));
               onCreated(listing);
