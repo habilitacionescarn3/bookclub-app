@@ -60,12 +60,12 @@ async function getS3ObjectBytes(bucket, key) {
   return Buffer.isBuffer(resp.Body) ? resp.Body : Buffer.from(resp.Body);
 }
 
-function toBase64Image(bytes, contentType) {
+function toBase64Image(bytes, mediaType) {
   return {
     type: 'image',
     source: {
       type: 'base64',
-      media_type: contentType || 'image/jpeg',
+      media_type: mediaType || 'image/jpeg',
       data: bytes.toString('base64'),
     },
   };
@@ -108,9 +108,11 @@ function normalizeMetadata(obj = {}) {
 
 
 async function analyzeUniversalItemImage({ bucket, key, contentType = 'image/jpeg', instruction, modelId }) {
-  modelId = modelId || process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-haiku-4-5-20251001-v1:0';
+  // Use a standard valid model ID for Bedrock
+  modelId = modelId || process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-3-5-haiku-20241022-v1:0';
   const client = getBedrockClient();
   let bytes = await getS3ObjectBytes(bucket, key);
+  let mediaType = contentType;
 
   // Bedrock image limit guard
   const BASE64_MAX = 5 * 1024 * 1024;
@@ -125,7 +127,7 @@ async function analyzeUniversalItemImage({ bucket, key, contentType = 'image/jpe
           .jpeg({ quality: Math.max(40, Math.floor(quality)), mozjpeg: true })
           .toBuffer();
         bytes = out;
-        contentType = 'image/jpeg';
+        mediaType = 'image/jpeg';
         if (estimateBase64Length(out.length) <= BASE64_MAX) break;
         width = width * 0.8;
         quality = quality * 0.85;
@@ -136,8 +138,8 @@ async function analyzeUniversalItemImage({ bucket, key, contentType = 'image/jpe
   }
 
   const systemPrompt =
-    'You are a universal community library assistant. Your task is to analyze an image of an item (book, toy, tool, game, etc.) and extract metadata. ' +
-    'FIRST, identify the category of the item from this list: [book, toy, tool, game, event_hire, other]. ' +
+    'You are a universal community library assistant. Your task is to analyze an image of an item (book, toy, tool, game, clothing, etc.) and extract metadata. ' +
+    'FIRST, identify the category of the item from this list: [book, toy, tool, game, clothing, event_hire, other]. ' +
     'SECOND, extract the title and a 1-3 sentence description. ' +
     'THIRD, CRITICAL SAFETY RULE: If the image is primarily of a human person, a face, or contains personal identifying information of a person (and is not an item for the library), ' +
     'set the "category" to "person_error" and "description" to "PERSON_DETECTED". ' +
@@ -158,7 +160,7 @@ async function analyzeUniversalItemImage({ bucket, key, contentType = 'image/jpe
         role: 'user',
         content: [
           { type: 'text', text: systemPrompt + '\n' + userText },
-          toBase64Image(bytes, contentType),
+          toBase64Image(bytes, mediaType),
         ],
       },
     ],
@@ -198,9 +200,10 @@ async function analyzeUniversalItemImage({ bucket, key, contentType = 'image/jpe
 }
 
 async function analyzeLostFoundImage({ bucket, key, contentType = 'image/jpeg', modelId }) {
-  modelId = modelId || process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-haiku-4-5-20251001-v1:0';
+  modelId = modelId || process.env.BEDROCK_MODEL_ID || 'us.anthropic.claude-3-5-haiku-20241022-v1:0';
   const client = getBedrockClient();
   let bytes = await getS3ObjectBytes(bucket, key);
+  let mediaType = contentType;
 
   const BASE64_MAX = 5 * 1024 * 1024;
   try {
@@ -214,7 +217,7 @@ async function analyzeLostFoundImage({ bucket, key, contentType = 'image/jpeg', 
           .jpeg({ quality: Math.max(40, Math.floor(quality)), mozjpeg: true })
           .toBuffer();
         bytes = out;
-        contentType = 'image/jpeg';
+        mediaType = 'image/jpeg';
         if (estimateBase64Length(out.length) <= BASE64_MAX) break;
         width = width * 0.8;
         quality = quality * 0.85;
@@ -226,13 +229,13 @@ async function analyzeLostFoundImage({ bucket, key, contentType = 'image/jpeg', 
 
   const systemPrompt =
     'You are an AI assistant helping a community club manage their lost & found. Your task is to analyze an image of a found item. ' +
-    'Extract a concise title, a detailed description, classify the item type (book, toy, tool, game, or other), and note any visible location hints in the background (where it might have been found). ' +
+    'Extract a concise title, a detailed description, classify the item type (book, toy, tool, game, clothing, or other), and note any visible location hints in the background (where it might have been found). ' +
     'CRITICAL SAFETY RULE: If the image is primarily of a human person, a face, or contains personal identifying information, ' +
     'set "itemType" to "person_error" and "description" to "PERSON_DETECTED". ' +
     'Return ONLY strict JSON (no commentary) with this shape: ' +
     '{"title":"string","description":"string","itemType":"string","foundLocation":"string"}. ' +
     'Rules: ' +
-    '1. "itemType" MUST be one of: book, toy, tool, game, other. ' +
+    '1. "itemType" MUST be one of: book, toy, tool, game, clothing, other. ' +
     '2. "foundLocation" is optional. If you cannot guess the location from the background, return an empty string. ';
 
   const body = JSON.stringify({
@@ -243,7 +246,7 @@ async function analyzeLostFoundImage({ bucket, key, contentType = 'image/jpeg', 
         role: 'user',
         content: [
           { type: 'text', text: systemPrompt },
-          toBase64Image(bytes, contentType),
+          toBase64Image(bytes, mediaType),
         ],
       },
     ],
