@@ -441,14 +441,15 @@ class ApiService {
       const blob = file.slice(start, end);
       const partNumber = index + 1;
       const { uploadUrl } = await this.multipartSignPart({ key, uploadId, partNumber, contentType: fileType });
-      const putRes = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: blob,
+      const putRes = await axios.put(uploadUrl, blob, {
+        headers: {
+          'Content-Type': null as any,
+        },
+        timeout: 30 * 60 * 1000,
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
       });
-      if (!putRes.ok) {
-        throw new Error(`S3 Part upload failed: ${putRes.statusText}`);
-      }
-      const rawETag = putRes.headers.get('etag') || putRes.headers.get('ETag') || '';
+      const rawETag = putRes.headers.etag || putRes.headers.ETag || (putRes.headers as any)['etag'] || '';
       const eTag = rawETag.replace(/"/g, '');
       if (!eTag) {
         throw new Error('ETag missing from S3 upload response. This is usually a CORS issue — ensure the S3 bucket ExposeHeaders includes "ETag".');
