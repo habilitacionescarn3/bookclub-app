@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { reduceImageSize } from '../utils/image-utils';
 
 // Minimal local type for selected images
 interface SelectedImage {
@@ -44,9 +45,12 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     setProcessingProgress({ current: 0, total: accepted.length });
 
     try {
-      const results: SelectedImage[] = accepted.map((file, i) => ({
-        file,
-        preview: URL.createObjectURL(file),
+      const results: SelectedImage[] = await Promise.all(accepted.map(async (file, i) => {
+        const processedFile = await reduceImageSize(file);
+        return {
+          file: processedFile,
+          preview: URL.createObjectURL(processedFile),
+        };
       }));
       setProcessingProgress({ current: accepted.length, total: accepted.length });
 
