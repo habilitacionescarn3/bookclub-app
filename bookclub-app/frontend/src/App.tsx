@@ -93,6 +93,10 @@ function App() {
                   }
                 />
                 <Route
+                  path="/my-library/lost-found"
+                  element={<Navigate to="/my-lost-and-found" replace />}
+                />
+                <Route
                   path="/my-library/:categorySlug"
                   element={
                     <ProtectedRoute>

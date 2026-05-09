@@ -5,7 +5,7 @@ import { ProfileUpdateData } from '../types';
 import { TIMEZONE_OPTIONS } from '../constants/timezones';
 
 const ProfileEdit: React.FC = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const [formData, setFormData] = useState({
     name: user?.name || '',
     bio: user?.bio || '',
@@ -90,7 +90,7 @@ const ProfileEdit: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Edit Profile</h2>
@@ -210,8 +210,8 @@ const ProfileEdit: React.FC = () => {
         </form>
       </div>
 
-      {/* Notification Settings - moved under Profile */}
-      <div className="bg-white shadow rounded-lg mt-6">
+      {/* Notification Settings */}
+      <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Notification Settings</h3>
           <p className="text-sm text-gray-600">Manage your email notification preferences.</p>
@@ -224,6 +224,24 @@ const ProfileEdit: React.FC = () => {
             Open Notification Settings
           </a>
         </div>
+      </div>
+
+      {/* Account / Logout - especially for mobile */}
+      <div className="bg-white shadow rounded-lg p-6 flex flex-col gap-4">
+        <h3 className="text-lg font-semibold text-gray-900">Account</h3>
+        <button
+          onClick={() => {
+            if (window.confirm('Are you sure you want to sign out?')) {
+              logout();
+            }
+          }}
+          className="w-full py-3 rounded-xl border border-red-200 text-red-600 font-bold hover:bg-red-50 transition-all flex items-center justify-center gap-2"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Sign Out
+        </button>
       </div>
     </div>
   );

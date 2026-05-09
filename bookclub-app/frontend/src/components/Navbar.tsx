@@ -77,7 +77,6 @@ const Navbar: React.FC = () => {
 
   const isLostFoundPath = location.pathname === '/library/lost-found'
     || location.pathname.startsWith('/library/lost-found/')
-    || location.pathname === '/my-library/lost-found'
     || location.pathname === '/my-lost-and-found';
 
   return (
@@ -257,15 +256,30 @@ const Navbar: React.FC = () => {
                 </Link>
               )}
               {isAuthenticated ? (
-                <Link to="/profile" className="flex items-center hover:opacity-80 transition-opacity">
-                  {user?.profilePicture ? (
-                    <img src={user.profilePicture} alt="Avatar" className="h-7 w-7 rounded-full object-cover border border-gray-200 shadow-sm" />
-                  ) : (
-                    <div className="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200 shadow-sm">
-                      <span className="text-xs font-bold text-indigo-700">{user?.name?.charAt(0)?.toUpperCase()}</span>
-                    </div>
-                  )}
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link to="/profile" className="flex items-center hover:opacity-80 transition-opacity">
+                    {user?.profilePicture ? (
+                      <img src={user.profilePicture} alt="Avatar" className="h-7 w-7 rounded-full object-cover border border-gray-200 shadow-sm" />
+                    ) : (
+                      <div className="h-7 w-7 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200 shadow-sm">
+                        <span className="text-xs font-bold text-indigo-700">{user?.name?.charAt(0)?.toUpperCase()}</span>
+                      </div>
+                    )}
+                  </Link>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('Are you sure you want to sign out?')) {
+                        logout();
+                      }
+                    }}
+                    className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                    aria-label="Sign Out"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                    </svg>
+                  </button>
+                </div>
               ) : (
                 <a 
                   href={`${config.apiBaseUrl.replace('api.', '')}/login`}

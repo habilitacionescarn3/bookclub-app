@@ -27,10 +27,10 @@ const ManagementItemCard: React.FC<ManagementItemCardProps> = ({ item, onDelete,
     navigate(`/books/${itemId}`);
   };
 
+  const isOwner = (item as any).userId === user?.userId;
   const statusBadge = () => {
     const status = (item as any).status;
     const hasLentTo = !!(item as any).lentToUserId || !!(item as any).lentToUserName || !!(item as any).lentTo;
-    const isOwner = (item as any).userId === user?.userId;
     if ((hasLentTo && isOwner) || status === 'lent') return <span className="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Lent</span>;
     if (hasLentTo && !isOwner) return <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Borrowed</span>;
     if (status === 'borrowed') return <span className="bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Borrowed</span>;
@@ -80,20 +80,22 @@ const ManagementItemCard: React.FC<ManagementItemCardProps> = ({ item, onDelete,
           </div>
         </div>
 
-        <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
-          <button 
-            onClick={() => navigate(`/books/${itemId}/edit`)}
-            className="p-2 text-gray-400 hover:text-indigo-600 transition-colors bg-gray-50 rounded-lg"
-          >
-            <PencilSquareIcon className="h-5 w-5" />
-          </button>
-          <button 
-            onClick={() => { if(window.confirm(`Are you sure you want to delete this ${label}?`)) onDelete(itemId); }}
-            className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-gray-50 rounded-lg"
-          >
-            <TrashIcon className="h-5 w-5" />
-          </button>
-        </div>
+        {isOwner && (
+          <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => navigate(`/books/${itemId}/edit`)}
+              className="p-2 text-gray-400 hover:text-indigo-600 transition-colors bg-gray-50 rounded-lg"
+            >
+              <PencilSquareIcon className="h-5 w-5" />
+            </button>
+            <button 
+              onClick={() => { if(window.confirm(`Are you sure you want to delete this ${label}?`)) onDelete(itemId); }}
+              className="p-2 text-gray-400 hover:text-red-600 transition-colors bg-gray-50 rounded-lg"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          </div>
+        )}
 
       </div>
     );
@@ -122,23 +124,25 @@ const ManagementItemCard: React.FC<ManagementItemCardProps> = ({ item, onDelete,
         </div>
 
         {/* Floating actions on hover */}
-        <div 
-          className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent translate-y-full group-hover:translate-y-0 transition-transform flex justify-center gap-2"
-          onClick={e => e.stopPropagation()}
-        >
-          <button 
-            onClick={() => navigate(`/books/${itemId}/edit`)}
-            className="bg-white/90 backdrop-blur-sm text-gray-900 p-2.5 rounded-2xl hover:bg-white transition-colors shadow-lg flex items-center gap-2 text-xs font-bold"
+        {isOwner && (
+          <div 
+            className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/60 to-transparent translate-y-full group-hover:translate-y-0 transition-transform flex justify-center gap-2"
+            onClick={e => e.stopPropagation()}
           >
-            <PencilSquareIcon className="h-4 w-4" /> Edit
-          </button>
-          <button 
-            onClick={() => { if(window.confirm(`Are you sure you want to delete this ${label}?`)) onDelete(itemId); }}
-            className="bg-red-500 text-white p-2.5 rounded-2xl hover:bg-red-600 transition-colors shadow-lg"
-          >
-            <TrashIcon className="h-4 w-4" />
-          </button>
-        </div>
+            <button 
+              onClick={() => navigate(`/books/${itemId}/edit`)}
+              className="bg-white/90 backdrop-blur-sm text-gray-900 p-2.5 rounded-2xl hover:bg-white transition-colors shadow-lg flex items-center gap-2 text-xs font-bold"
+            >
+              <PencilSquareIcon className="h-4 w-4" /> Edit
+            </button>
+            <button 
+              onClick={() => { if(window.confirm(`Are you sure you want to delete this ${label}?`)) onDelete(itemId); }}
+              className="bg-red-500 text-white p-2.5 rounded-2xl hover:bg-red-600 transition-colors shadow-lg"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="p-5 flex-grow flex flex-col">

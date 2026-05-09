@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LIBRARY_CONFIGS } from '../config/libraryConfig';
 import { apiService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { useUploadModal } from '../contexts/UploadModalContext';
 import ManagementItemCard from '../components/ManagementItemCard';
 import SearchBar from '../components/SearchBar';
@@ -18,6 +19,7 @@ const FILTER_CHIPS = [
 
 const MyLibraryHub: React.FC = () => {
   const { user } = useAuth();
+  const { addNotification } = useNotification();
   const { openModal } = useUploadModal();
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
@@ -46,14 +48,22 @@ const MyLibraryHub: React.FC = () => {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  const handleDelete = (id: string) => {
-    setItems(prev => prev.filter((i: any) => (i.bookId || i.listingId) !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await apiService.deleteBook(id);
+      setItems(prev => prev.filter((i: any) => (i.bookId || i.listingId) !== id));
+      addNotification('success', 'Item deleted successfully');
+    } catch (err: any) {
+      console.error('[Delete] Failed:', err);
+      addNotification('error', err?.message || 'Failed to delete item');
+    }
   };
+
   const handleUpdate = (updated: LibraryItem) => {
+    const updatedId = (updated as any).bookId || (updated as any).listingId;
     setItems(prev => prev.map((i: any) => {
-      const id = i.bookId || i.listingId;
-      const updId = (updated as any).bookId || (updated as any).listingId;
-      return id === updId ? updated : i;
+      const currentId = i.bookId || i.listingId;
+      return currentId === updatedId ? updated : i;
     }));
   };
 

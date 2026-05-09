@@ -45,7 +45,6 @@ const MobileTabBar: React.FC = () => {
 
   const isLostFoundPath = location.pathname === '/library/lost-found'
     || location.pathname.startsWith('/library/lost-found/')
-    || location.pathname === '/my-library/lost-found'
     || location.pathname === '/my-lost-and-found';
 
   const Icon = {
