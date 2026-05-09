@@ -95,7 +95,7 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ config, onClose
             try {
               setUploadProgress(p => ({ ...p, index: i + 1, currentName: image.file.name }));
               
-              let uploadResult: { fileUrl?: string; key?: string; bucket?: string } = {};
+              let uploadResult: { fileUrl?: string; key?: string; bucket?: string; listingId?: string } = {};
               
               if (!isLocal) {
                 uploadResult = await withRetry(

@@ -70,8 +70,8 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     }
   }, [processedImages, maxImages, onImagesProcessed, onError]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileSelection(e.target.files);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await handleFileSelection(e.target.files);
   };
 
   const removeImage = (index: number) => {
@@ -162,7 +162,7 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
         <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
           {processedImages.map((image, index) => (
             <div key={index} className="relative border rounded-lg p-2 bg-gray-50">
-              {image.preview && (
+              {image?.preview && (
                 <img
                   src={image.preview}
                   alt={`Selected ${index + 1}`}
@@ -177,7 +177,9 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
               >
                 ×
               </button>
-              <p className="text-xs text-gray-600 mt-1 truncate">{(image.file.size / 1024).toFixed(0)}KB</p>
+              <p className="text-xs text-gray-600 mt-1 truncate">
+                {image?.file ? `${(image.file.size / 1024).toFixed(0)}KB` : 'Processing...'}
+              </p>
             </div>
           ))}
         </div>
@@ -202,7 +204,9 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
         <div className="text-xs text-gray-600 pt-2 border-t">
           <div className="flex justify-between">
             <span>Selected: {processedImages.length}</span>
-            <span>Total size: {(processedImages.reduce((s, img) => s + img.file.size, 0) / 1024).toFixed(0)}KB</span>
+            <span>
+              Total size: {(processedImages.reduce((s, img) => s + (img?.file?.size || 0), 0) / 1024).toFixed(0)}KB
+            </span>
           </div>
         </div>
       )}

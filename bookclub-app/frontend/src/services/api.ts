@@ -353,10 +353,12 @@ class ApiService {
   }
 
   // File upload methods
-  async generateUploadUrl(fileType: string, fileName?: string): Promise<UploadUrlResponse> {
+  async generateUploadUrl(fileType: string, fileName?: string, opts: { context?: string; libraryType?: string } = {}): Promise<UploadUrlResponse> {
     const response: AxiosResponse<ApiResponse<UploadUrlResponse>> = await this.api.post('/upload-url', {
       fileType,
       fileName,
+      context: opts.context,
+      libraryType: opts.libraryType,
     });
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Failed to generate upload URL');

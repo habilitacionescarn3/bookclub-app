@@ -34,6 +34,11 @@ if (typeof URL.revokeObjectURL === 'undefined') {
   Object.defineProperty(URL, 'revokeObjectURL', { value: jest.fn() });
 }
 
+// Mock image utils
+jest.mock('../utils/image-utils', () => ({
+  reduceImageSize: (file: File) => Promise.resolve(file)
+}));
+
 describe('Add Books Modal (Bulk Upload)', () => {
   const mockOnClose = jest.fn();
   const mockOnBookAdded = jest.fn();
@@ -110,7 +115,7 @@ describe('Add Books Modal (Bulk Upload)', () => {
     fireEvent.change(input, { target: { files: [mockFile] } });
 
     // Click upload
-    const uploadButton = screen.getByText('Upload 1 Image');
+    const uploadButton = await screen.findByText('Upload 1 Image');
     fireEvent.click(uploadButton);
 
     // Verify background upload steps
