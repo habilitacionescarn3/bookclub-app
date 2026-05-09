@@ -97,6 +97,7 @@ export interface UploadUrlResponse {
   fileUrl: string;
   fileKey: string;
   userId?: string;
+  listingId?: string;
 }
 
 export interface ProfileUpdateData {

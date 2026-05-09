@@ -3,7 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MultiImageUpload from '../../components/MultiImageUpload';
 
-// No image processing service in simplified component
+// Mock image utils
+jest.mock('../../utils/image-utils', () => ({
+  reduceImageSize: (file: File) => Promise.resolve(file)
+}));
 
 describe('MultiImageUpload', () => {
   const mockOnImagesProcessed = jest.fn();

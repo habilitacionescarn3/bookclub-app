@@ -353,10 +353,12 @@ class ApiService {
   }
 
   // File upload methods
-  async generateUploadUrl(fileType: string, fileName?: string): Promise<UploadUrlResponse> {
+  async generateUploadUrl(fileType: string, fileName?: string, opts: { context?: string; libraryType?: string } = {}): Promise<UploadUrlResponse> {
     const response: AxiosResponse<ApiResponse<UploadUrlResponse>> = await this.api.post('/upload-url', {
       fileType,
       fileName,
+      context: opts.context,
+      libraryType: opts.libraryType,
     });
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Failed to generate upload URL');
@@ -402,7 +404,7 @@ class ApiService {
   }
 
   // High-level uploader: uses multipart for large files
-  async uploadAnySize(file: File, opts: { partSize?: number; partConcurrency?: number; multipartThreshold?: number; context?: string; libraryType?: string } = {}): Promise<{ fileUrl: string; bucket?: string; key?: string }>{
+  async uploadAnySize(file: File, opts: { partSize?: number; partConcurrency?: number; multipartThreshold?: number; context?: string; libraryType?: string } = {}): Promise<{ fileUrl: string; bucket?: string; key?: string; listingId?: string }>{
     let fileType = file.type;
     if (!fileType) {
       const ext = file.name.split('.').pop()?.toLowerCase();
@@ -420,21 +422,21 @@ class ApiService {
     const threshold = opts.multipartThreshold ?? 5 * 1024 * 1024;
 
     if (file.size <= threshold) {
-      const { uploadUrl, fileUrl, fileKey, userId } = await this.generateUploadUrl(fileType, file.name);
+      const { uploadUrl, fileUrl, fileKey, userId, listingId } = await this.generateUploadUrl(fileType, file.name, { context: opts.context, libraryType: opts.libraryType });
       await this.uploadFile(uploadUrl, file, userId, fileType);
       // Try to parse bucket/key from fileUrl
       try {
         const u = new URL(fileUrl);
         const bucket = u.hostname.split('.s3.amazonaws.com')[0];
         const key = u.pathname.replace(/^\//, '');
-        return { fileUrl, bucket, key };
+        return { fileUrl, bucket, key, listingId };
       } catch {
-        return { fileUrl, key: fileKey } as any;
+        return { fileUrl, key: fileKey, listingId } as any;
       }
     }
 
     // Multipart
-    const { key, uploadId } = await this.multipartStart(fileType, file.name, { context: opts.context, libraryType: opts.libraryType });
+    const { key, uploadId, listingId } = await this.multipartStart(fileType, file.name, { context: opts.context, libraryType: opts.libraryType });
 
     const totalParts = Math.ceil(file.size / partSize);
     const partsEtags: Array<{ ETag: string; PartNumber: number }> = new Array(totalParts);
@@ -475,7 +477,7 @@ class ApiService {
     await Promise.all(workers);
 
     const { fileUrl } = await this.multipartComplete({ key, uploadId, parts: partsEtags });
-    return { fileUrl, key };
+    return { fileUrl, key, listingId };
   }
 
   // Add method to get pre-extracted metadata with exponential backoff
