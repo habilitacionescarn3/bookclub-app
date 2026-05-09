@@ -7,6 +7,7 @@ import Pagination from '../components/Pagination';
 import AddBookModal from '../components/AddBookModal';
 import CreateListingModal from '../components/CreateListingModal';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import { getLibraryConfig, LIBRARY_CONFIGS } from '../config/libraryConfig';
 import { 
   Squares2X2Icon, 
@@ -24,6 +25,7 @@ const MyItemsPage: React.FC<MyItemsPageProps> = ({ categorySlugOverride }) => {
   const { categorySlug: paramCategorySlug } = useParams<{ categorySlug: string }>();
   const categorySlug = categorySlugOverride || paramCategorySlug;
   const { user } = useAuth();
+  const { addNotification } = useNotification();
   const location = useLocation();
 
   const isAllView = categorySlug === 'all';
@@ -50,9 +52,10 @@ const MyItemsPage: React.FC<MyItemsPageProps> = ({ categorySlugOverride }) => {
       setLoading(true);
 
       if (isAllView) {
-        // Fetch all categories in parallel and merge
+        // Fetch all categories (except lost & found) in parallel and merge
+        const categoriesToFetch = LIBRARY_CONFIGS.filter(c => c.libraryType !== 'lost_found');
         const allResults = await Promise.all(
-          LIBRARY_CONFIGS.map(cfg =>
+          categoriesToFetch.map(cfg =>
             apiService.listToyListings({ userId: user.userId, libraryType: cfg.libraryType, limit: 100 })
               .then(r => r.items || [])
               .catch(() => [] as LibraryItem[])
@@ -119,16 +122,28 @@ const MyItemsPage: React.FC<MyItemsPageProps> = ({ categorySlugOverride }) => {
   };
 
   const handleItemDeleted = async (id: string) => {
+    const itemToDelete = items.find(i => ((i as any).bookId || (i as any).listingId) === id);
+    if (!itemToDelete) return;
+
     try {
+      // Books and Toys/Tools (now unified) hit the same /books/{id} endpoint
       await apiService.deleteBook(id);
+      
+      // Update local state immediately for snappy UI
       setItems(prev => prev.filter(i => ((i as any).bookId || (i as any).listingId) !== id));
+      addNotification('success', 'Item deleted successfully');
     } catch (err: any) {
-      alert(err?.message || 'Failed to delete item. Please try again.');
+      console.error('[Delete] Failed:', err);
+      addNotification('error', err?.message || 'Failed to delete item. Please try again.');
     }
   };
 
   const handleItemUpdated = (updated: any) => {
-    setItems(prev => prev.map(i => ((i as any).bookId || (i as any).listingId) === updated.bookId ? updated : i));
+    const updatedId = updated.bookId || updated.listingId;
+    setItems(prev => prev.map(i => {
+      const currentId = (i as any).bookId || (i as any).listingId;
+      return currentId === updatedId ? updated : i;
+    }));
   };
 
   if (!isAllView && !config) {
@@ -149,10 +164,10 @@ const MyItemsPage: React.FC<MyItemsPageProps> = ({ categorySlugOverride }) => {
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
           <Link 
-            to={config?.libraryType === 'lost_found' ? "/library/lost-found" : "/my-library"}
+            to="/my-library"
             className="inline-flex items-center gap-1.5 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors mb-4"
           >
-            <ChevronLeftIcon className="h-4 w-4" /> {config?.libraryType === 'lost_found' ? "Back to Lost & Found" : "Back to My Library"}
+            <ChevronLeftIcon className="h-4 w-4" /> Back to My Library
           </Link>
           
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -179,7 +194,7 @@ const MyItemsPage: React.FC<MyItemsPageProps> = ({ categorySlugOverride }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {/* Controls */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
-          {!isAllView && config?.libraryType !== 'lost_found' && (
+          {!isAllView && (
           <div className="flex bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm w-full sm:w-auto">
             <button
               onClick={() => { setFilter('owned'); setMyPageIndex(0); }}
