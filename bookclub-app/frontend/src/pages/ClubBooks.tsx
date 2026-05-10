@@ -156,10 +156,7 @@ const ClubBooks: React.FC = () => {
 
   const canRequestJoin =
     club &&
-    !club.isMember &&
-    !['admin', 'owner'].includes(club.userRole || '') &&
-    club.createdBy !== user?.userId &&
-    club.userStatus !== 'active';
+    !['admin', 'member'].includes(club.userRole || '');
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -267,7 +264,7 @@ const ClubBooks: React.FC = () => {
 
                 {/* Horizontal Scroll Container */}
                 <div className="relative group">
-                  <div 
+                  <div
                     ref={(el) => { if (el) scrollRefs.current[category] = el; }}
                     className="flex overflow-x-auto pb-4 gap-6 scrollbar-hide snap-x"
                   >
@@ -277,7 +274,7 @@ const ClubBooks: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Scroll Left Button */}
                   {items.length > 3 && (
                     <button
@@ -290,18 +287,18 @@ const ClubBooks: React.FC = () => {
                       </svg>
                     </button>
                   )}
-                  
+
                   {/* Scroll Right Button */}
                   {items.length > 3 && (
                     <button
                       onClick={() => scrollRight(category)}
                       className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white border border-gray-200 rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity md:opacity-100"
-                    aria-label="Scroll right"
-                  >
-                    <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
+                      aria-label="Scroll right"
+                    >
+                      <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
                   )}
                   <div className="absolute top-0 right-0 h-full w-12 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none opacity-100 transition-opacity" />
                   {/* Left fade indicator when scrolled */}
