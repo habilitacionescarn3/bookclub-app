@@ -6,6 +6,7 @@ import PublicBookCard from '../components/PublicBookCard';
 import { useAuth } from '../contexts/AuthContext';
 import { ArchiveBoxIcon, UserPlusIcon, UsersIcon, EnvelopeIcon, InboxArrowDownIcon } from '@heroicons/react/24/outline';
 import InviteByEmailModal from '../components/InviteByEmailModal';
+import ClubJoinRequests from '../components/ClubJoinRequests';
 
 const ClubBooks: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -13,8 +14,6 @@ const ClubBooks: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const [clubId, setClubId] = useState<string | null>(null);
   const [club, setClub] = useState<BookClub | null>(null);
-  const [requests, setRequests] = useState<Array<{ userId: string; name?: string; email?: string; status: string }>>([]);
-  const [loadingRequests, setLoadingRequests] = useState(false);
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,31 +58,12 @@ const ClubBooks: React.FC = () => {
     }
   }, [clubId]);
 
-  const fetchRequests = useCallback(async () => {
-    if (!clubId || !isAuthenticated || club?.userRole !== 'admin') return;
-    try {
-      setLoadingRequests(true);
-      const res = await apiService.listJoinRequests(clubId);
-      setRequests(res.items || []);
-    } catch {
-      // Ignore
-    } finally {
-      setLoadingRequests(false);
-    }
-  }, [clubId, isAuthenticated, club?.userRole]);
-
   // Re-fetch club when authentication changes to get membership status
   useEffect(() => {
     if (isAuthenticated) {
       fetchClub();
     }
   }, [isAuthenticated, fetchClub]);
-
-  useEffect(() => {
-    if (isAuthenticated && club?.userRole === 'admin') {
-      fetchRequests();
-    }
-  }, [isAuthenticated, club?.userRole, fetchRequests]);
 
   const handleRequestJoin = async () => {
     if (!isAuthenticated) {
@@ -113,27 +93,6 @@ const ClubBooks: React.FC = () => {
       setError(e.message || 'Failed to load books');
     }
   }, [clubId]);
-
-  const handleApprove = async (userId: string) => {
-    if (!clubId) return;
-    try {
-      await apiService.approveJoinRequest(clubId, userId);
-      setRequests(prev => prev.filter(r => r.userId !== userId));
-      fetchClub();
-    } catch (e: any) {
-      setJoinError(e.message || 'Failed to approve request');
-    }
-  };
-
-  const handleReject = async (userId: string) => {
-    if (!clubId) return;
-    try {
-      await apiService.rejectJoinRequest(clubId, userId);
-      setRequests(prev => prev.filter(r => r.userId !== userId));
-    } catch (e: any) {
-      setJoinError(e.message || 'Failed to reject request');
-    }
-  };
 
   useEffect(() => {
     if (!clubId) return;
@@ -287,7 +246,7 @@ const ClubBooks: React.FC = () => {
         )}
 
         {/* Admin: Pending Requests Section */}
-        {club?.userRole === 'admin' && requests.length > 0 && (
+        {club?.userRole === 'admin' && clubId && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div className="bg-amber-50 border border-amber-100 rounded-3xl p-6">
               <div className="flex items-center gap-2 mb-4">
@@ -300,36 +259,12 @@ const ClubBooks: React.FC = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {requests.map((req) => (
-                  <div key={req.userId} className="bg-white p-4 rounded-2xl border border-amber-200/50 shadow-sm flex items-center justify-between">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-gray-900 truncate">{req.name || 'Anonymous User'}</p>
-                      <p className="text-xs text-gray-500 truncate">{req.email || 'No email provided'}</p>
-                    </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <button
-                        onClick={() => handleApprove(req.userId)}
-                        className="p-2 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-colors"
-                        title="Approve"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleReject(req.userId)}
-                        className="p-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors"
-                        title="Reject"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <ClubJoinRequests 
+                clubId={clubId} 
+                variant="compact" 
+                onStatusChange={fetchClub}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 space-y-0"
+              />
             </div>
           </div>
         )}
