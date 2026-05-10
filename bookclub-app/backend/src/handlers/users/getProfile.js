@@ -29,18 +29,15 @@ module.exports.handler = async (event) => {
       console.log('[getUserProfile] Attempting fallback to Authorization header');
       // Fallback: parse token from Authorization header (handles both 'Bearer ' prefix and raw tokens)
       const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
-      const accessTokenHeader = (event.headers && (event.headers['X-Access-Token'] || event.headers['x-access-token'])) || '';
-      console.log('[getUserProfile] Auth headers present:', { auth: !!authHeader, access: !!accessTokenHeader });
+      console.log('[getUserProfile] Auth header present:', !!authHeader);
       
-      let token = accessTokenHeader || null;
-      if (!token) {
-        if (authHeader.startsWith('Bearer ')) {
-          token = authHeader.slice('Bearer '.length);
-          console.log('[getUserProfile] Extracted Bearer token');
-        } else if (authHeader.length > 0) {
-          token = authHeader; // Assume raw token
-          console.log('[getUserProfile] Using raw token from header');
-        }
+      let token = null;
+      if (authHeader.startsWith('Bearer ')) {
+        token = authHeader.slice('Bearer '.length);
+        console.log('[getUserProfile] Extracted Bearer token');
+      } else if (authHeader.length > 0) {
+        token = authHeader; // Assume raw token
+        console.log('[getUserProfile] Using raw token from header');
       }
       
       if (!token) {
