@@ -13,20 +13,32 @@ exports.handler = async (event) => {
     // Auth: prefer authorizer claims, fallback to token validation (OPTIONAL for public access)
     const claims = event?.requestContext?.authorizer?.claims;
     let userId = claims?.sub;
+    
+    console.log(`DEBUG [getClub]: Starting auth check. userId from claims: ${userId}`);
+    
     if (!userId) {
       const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
       const accessTokenHeader = (event.headers && (event.headers['X-Access-Token'] || event.headers['x-access-token'])) || '';
       
+      console.log(`DEBUG [getClub]: Headers present - Authorization: ${!!authHeader}, X-Access-Token: ${!!accessTokenHeader}`);
+      
+      // CRITICAL: We MUST use the Access Token for User.getCurrentUser (Cognito API)
+      // ID Tokens will cause an error.
       const token = accessTokenHeader || (authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader || null);
       
       if (token && token !== 'null') {
         try {
+          console.log('DEBUG [getClub]: Attempting to fetch user with token...');
           const currentUser = await User.getCurrentUser(token);
-          if (currentUser) userId = currentUser.userId;
+          if (currentUser) {
+            userId = currentUser.userId;
+            console.log(`DEBUG [getClub]: Identity resolved from token. userId: ${userId}`);
+          }
         } catch (err) {
-          // If token is present but invalid, we still allow public access, just without identity
-          console.warn('Invalid token provided for getClub, falling back to public view');
+          console.warn(`DEBUG [getClub]: Identity resolution failed: ${err.message}`);
         }
+      } else {
+        console.log('DEBUG [getClub]: No valid token found in headers.');
       }
     }
 

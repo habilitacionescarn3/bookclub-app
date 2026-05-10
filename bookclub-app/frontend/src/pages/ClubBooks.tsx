@@ -156,7 +156,10 @@ const ClubBooks: React.FC = () => {
 
   const canRequestJoin =
     club &&
-    !['admin', 'member'].includes(club.userRole || '');
+    !club.isMember &&
+    !['admin', 'member', 'owner'].includes(club.userRole || '') &&
+    club.createdBy !== user?.userId &&
+    club.userStatus !== 'active';
 
   return (
     <div className="min-h-screen bg-gray-50">
