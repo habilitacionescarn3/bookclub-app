@@ -15,7 +15,10 @@ exports.handler = async (event) => {
     let userId = claims?.sub;
     if (!userId) {
       const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader || null;
+      const accessTokenHeader = (event.headers && (event.headers['X-Access-Token'] || event.headers['x-access-token'])) || '';
+      
+      const token = accessTokenHeader || (authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader || null);
+      
       if (token && token !== 'null') {
         try {
           const currentUser = await User.getCurrentUser(token);
