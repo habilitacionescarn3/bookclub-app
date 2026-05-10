@@ -161,6 +161,18 @@ const ClubBooks: React.FC = () => {
     club.createdBy !== user?.userId &&
     club.userStatus !== 'active';
 
+  console.log('DEBUG [ClubBooks]:', {
+    slug,
+    isAuthenticated,
+    userId: user?.userId,
+    clubId: club?.clubId,
+    isMember: club?.isMember,
+    userRole: club?.userRole,
+    userStatus: club?.userStatus,
+    createdBy: club?.createdBy,
+    canRequestJoin
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -546,6 +546,7 @@ class ApiService {
 
   async getClub(clubId: string): Promise<BookClub> {
     const response: AxiosResponse<ApiResponse<BookClub>> = await this.api.get(`/clubs/${clubId}`);
+    console.log(`DEBUG [apiService.getClub]: id=${clubId}`, response.data);
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Failed to get club');
     }
@@ -609,6 +610,7 @@ class ApiService {
 
   async resolveClubSlug(slug: string): Promise<BookClub | null> {
     const response: AxiosResponse<ApiResponse<{ club: BookClub | null }>> = await this.api.get(`/clubs/resolve/${slug}`);
+    console.log(`DEBUG [apiService.resolveClubSlug]: slug=${slug}`, response.data);
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Failed to resolve club');
     }
