@@ -4,7 +4,7 @@ import { Book, BookClub } from '../types';
 import { apiService } from '../services/api';
 import PublicBookCard from '../components/PublicBookCard';
 import { useAuth } from '../contexts/AuthContext';
-import { ArchiveBoxIcon, UserPlusIcon, UsersIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { ArchiveBoxIcon, UserPlusIcon, UsersIcon, EnvelopeIcon, InboxArrowDownIcon } from '@heroicons/react/24/outline';
 import InviteByEmailModal from '../components/InviteByEmailModal';
 
 const ClubBooks: React.FC = () => {
@@ -217,13 +217,22 @@ const ClubBooks: React.FC = () => {
               )}
 
               {club && (club.userRole === 'admin' || club.createdBy === user?.userId) && (
-                <button
-                  onClick={() => setShowInvite(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm"
-                >
-                  <EnvelopeIcon className="h-4 w-4" />
-                  Invite Members
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate(`/clubs/${clubId}/requests`)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 transition-colors shadow-sm"
+                  >
+                    <InboxArrowDownIcon className="h-4 w-4" />
+                    Manage Requests
+                  </button>
+                  <button
+                    onClick={() => setShowInvite(true)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm"
+                  >
+                    <EnvelopeIcon className="h-4 w-4" />
+                    Invite Members
+                  </button>
+                </>
               )}
             </div>
           </div>
