@@ -154,6 +154,13 @@ const ClubBooks: React.FC = () => {
     );
   }
 
+  const canRequestJoin =
+    club &&
+    !club.isMember &&
+    !['admin', 'owner'].includes(club.userRole || '') &&
+    club.createdBy !== user?.userId &&
+    club.userStatus !== 'active';
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -182,7 +189,7 @@ const ClubBooks: React.FC = () => {
               </div>
 
               {/* Join / pending for non-members */}
-              {club && !club.isMember && club.userRole !== 'admin' && club.createdBy !== user?.userId && club.userStatus !== 'active' && (
+              {canRequestJoin && (
                 club.userStatus === 'pending' ? (
                   <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                     Request Sent
