@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ArchiveBoxIcon, UserPlusIcon, UsersIcon, EnvelopeIcon, InboxArrowDownIcon } from '@heroicons/react/24/outline';
 import InviteByEmailModal from '../components/InviteByEmailModal';
 import ClubJoinRequests from '../components/ClubJoinRequests';
+import ClubMembersSection from '../components/ClubMembersSection';
 
 const ClubBooks: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -264,6 +265,30 @@ const ClubBooks: React.FC = () => {
                 variant="compact" 
                 onStatusChange={fetchClub}
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 space-y-0"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Admin: Manage Members Section */}
+        {club?.userRole === 'admin' && clubId && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+            <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-2 bg-indigo-50 rounded-xl">
+                  <UsersIcon className="h-5 w-5 text-indigo-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">Manage Members</h2>
+                  <p className="text-sm text-gray-500">View and audit all club members.</p>
+                </div>
+              </div>
+              
+              <ClubMembersSection 
+                clubId={clubId} 
+                isAdmin={true} 
+                createdBy={club?.createdBy} 
+                onStatusChange={fetchClub}
               />
             </div>
           </div>
