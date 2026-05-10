@@ -29,12 +29,17 @@ class ApiService {
       if (!idToken) idToken = getCookie('idToken');
       if (!accessToken) accessToken = getCookie('accessToken');
       
-      const token = accessToken || idToken;
+      const token = idToken || accessToken;
       
       if (token) {
         // Most API Gateway configurations (including custom authorizers or certain 
         // Cognito setups) expect the 'Bearer ' prefix.
         config.headers.Authorization = `Bearer ${token}`;
+      }
+      
+      // Also send Access Token in a separate header for backend Cognito API calls
+      if (accessToken) {
+        config.headers['X-Access-Token'] = accessToken;
       }
       return config;
     });
@@ -68,6 +73,9 @@ class ApiService {
 
               if (token) {
                 originalRequest.headers.Authorization = `Bearer ${token}`;
+                if (accessToken) {
+                  originalRequest.headers['X-Access-Token'] = accessToken;
+                }
                 return this.api(originalRequest);
               }
             }
