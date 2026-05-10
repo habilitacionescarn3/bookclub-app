@@ -177,6 +177,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -200,6 +201,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -247,6 +249,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -267,6 +270,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -287,6 +291,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -308,6 +313,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -328,6 +334,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -348,6 +355,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -368,6 +376,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -388,6 +397,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -408,6 +418,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -428,6 +439,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -444,6 +456,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -460,6 +473,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -480,6 +494,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -501,6 +516,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -522,6 +538,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -538,6 +555,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -554,6 +572,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -574,6 +593,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -590,7 +610,16 @@ functions:
       - http:
           path: users/me/notifications
           method: get
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
@@ -602,7 +631,16 @@ functions:
       - http:
           path: users/me/notifications
           method: put
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
             authorizerId:
@@ -615,7 +653,16 @@ functions:
       - http:
           method: POST
           path: /upload-url
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
           authorizer: 
             type: COGNITO_USER_POOLS
             authorizerId: 
@@ -633,6 +680,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -653,6 +701,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -673,6 +722,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -694,6 +744,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -715,6 +766,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -825,6 +877,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -839,7 +892,16 @@ functions:
       - http:
           method: GET
           path: /clubs/resolve/{slug}
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
 
   getClub:
     handler: src/handlers/clubs/get.handler
@@ -852,6 +914,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -868,6 +931,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -888,6 +952,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -908,6 +973,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -928,6 +994,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -948,6 +1015,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -969,6 +1037,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -986,6 +1055,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1006,6 +1076,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1026,6 +1097,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1046,6 +1118,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1066,6 +1139,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1086,6 +1160,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1106,6 +1181,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
             allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
@@ -1123,6 +1199,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
             allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
@@ -1140,6 +1217,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
             allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
@@ -1158,6 +1236,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1179,6 +1258,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1195,6 +1275,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
 
   createLostFound:
     handler: src/handlers/lost-found/create.handler
@@ -1207,6 +1288,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1227,6 +1309,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1247,6 +1330,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1267,6 +1351,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1312,6 +1397,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1328,6 +1414,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1340,7 +1427,16 @@ functions:
       - http:
           method: GET
           path: /swap-toys
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
 
   createToyListing:
     handler: src/handlers/swaptoys/create.handler
@@ -1353,6 +1449,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1368,7 +1465,16 @@ functions:
       - http:
           method: GET
           path: /swap-toys/{listingId}
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
 
   updateToyListing:
     handler: src/handlers/swaptoys/update.handler
@@ -1381,6 +1487,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1401,6 +1508,7 @@ functions:
             headers:
               - Content-Type
               - Authorization
+              - X-Access-Token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1417,7 +1525,16 @@ functions:
       - http:
           method: POST
           path: /contact
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
 
   # Public sitemap.xml
   sitemap:
@@ -1426,7 +1543,16 @@ functions:
       - http:
           method: GET
           path: /sitemap.xml
-          cors: true
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
 
 resources:
   Resources:
