@@ -22,6 +22,7 @@ provider:
     EVENT_BUS_NAME: ${env:EVENT_BUS_NAME, 'default'}
     EVENT_BUS_SOURCE: ${env:EVENT_BUS_SOURCE, 'bookclub.app'}
     ENABLE_IMAGE_ENRICHMENT: ${env:ENABLE_IMAGE_ENRICHMENT, 'false'}
+    ENABLE_STREAM_ENRICHMENT: ${env:ENABLE_STREAM_ENRICHMENT, 'true'}
     # Vision LLM API Configuration (Optional - services gracefully fallback to mocks)
     OPENAI_API_KEY: ${env:OPENAI_API_KEY, ''}
     ANTHROPIC_API_KEY: ${env:ANTHROPIC_API_KEY, ''}
@@ -871,6 +872,9 @@ functions:
             maximumRetryAttempts: 3
 
   # DynamoDB Streams processor for Books table (event mapping added via Resources since table is a CustomResource)
+  booksStreamProcessor:
+    handler: src/handlers/books/streamProcessor.handler
+
   # MCP analyzer: runs after Google metadata enrichment
   mcpAnalyzeImage:
     handler: src/handlers/books/mcpAnalyzeImage.handler
@@ -1999,6 +2003,9 @@ resources:
         KeySchema:
           - AttributeName: bookId
             KeyType: HASH
+        StreamSpecification:
+          StreamEnabled: true
+          StreamViewType: NEW_AND_OLD_IMAGES
         GlobalSecondaryIndexes:
           - IndexName: UserIdIndex
             KeySchema:
@@ -2031,6 +2038,37 @@ resources:
             ProvisionedThroughput:
               ReadCapacityUnits: 5
               WriteCapacityUnits: 5
+
+    # Explicit EventSourceMapping to wire DynamoDB Stream to the stream processor Lambda
+    BooksTableStreamToProcessor:
+      Type: AWS::Lambda::EventSourceMapping
+      Properties:
+        EventSourceArn: !GetAtt BooksTable.StreamArn
+        FunctionName: !GetAtt BooksStreamProcessorLambdaFunction.Arn
+        BatchSize: 10
+        MaximumBatchingWindowInSeconds: 5
+        StartingPosition: LATEST
+        Enabled: true
+
+    # FINAL safeguard: re-enable the Event Source Mapping at the end of the stack update.
+    # This addresses cases where later resources (e.g., table updates or other custom resources)
+    # might toggle/replace streams after the initial Ensure step.
+    EnsureBooksStreamMappingEnabledFinal:
+      Type: AWS::CloudFormation::CustomResource
+      Properties:
+        ServiceToken: !GetAtt EventSourceMappingManagerLambdaFunction.Arn
+        FunctionName: !GetAtt BooksStreamProcessorLambdaFunction.Arn
+        EventSourceArn: !GetAtt BooksTable.StreamArn
+      DependsOn:
+        - BooksTableStreamToProcessor
+        - BooksTable
+        - UsersTable
+        - MetadataCacheTable
+        - DmConversationsTable
+        - DmMessagesTable
+        - BookclubGroupsTable
+        - BookclubMembersTable
+        - BookCoversBucket
 
     DmConversationsTable:
       Type: AWS::CloudFormation::CustomResource
