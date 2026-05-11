@@ -33,7 +33,8 @@ import MyLibraryHub from './pages/MyLibraryHub';
 import MyItemsPage from './pages/MyItemsPage';
 import ClubRequests from './pages/ClubRequests';
 import ClubMembers from './pages/ClubMembers';
-import ClubBooks from './pages/ClubBooks';
+import ClubMemberPage from './pages/ClubMemberPage';
+import ClubLandingPage from './pages/ClubLandingPage';
 import LostFoundHub from './pages/LostFoundHub';
 import LostFoundDetails from './pages/LostFoundDetails';
 import MyLostFound from './pages/MyLostFound';
@@ -204,8 +205,20 @@ function App() {
                   }
                 />
                 <Route
+                  path="/explore/:slug"
+                  element={<ClubLandingPage />}
+                />
+                <Route
+                  path="/clubs/:slug"
+                  element={
+                    <ProtectedRoute>
+                      <ClubMemberPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
                   path="/clubs/:slug/explore"
-                  element={<ClubBooks />}
+                  element={<Navigate to="/explore/:slug" replace />}
                 />
                 <Route
                   path="/my-books"

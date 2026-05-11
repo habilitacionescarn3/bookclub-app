@@ -623,6 +623,19 @@ class ApiService {
     return response.data.data?.club || null;
   }
 
+  async resolveClubSlugPublic(slug: string): Promise<BookClub | null> {
+    const response: AxiosResponse<ApiResponse<{ club: BookClub | null }>> = await axios.get(
+      `${this.baseURL}/clubs/resolve/${slug}`,
+      {
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to resolve club');
+    }
+    return response.data.data?.club || null;
+  }
+
   // Admin - list pending join requests for a club
   async listJoinRequests(clubId: string): Promise<{ items: Array<{ clubId: string; userId: string; status: string; requestedAt?: string; name?: string; email?: string }> }> {
     const response: AxiosResponse<ApiResponse<{ items: Array<{ clubId: string; userId: string; status: string; requestedAt?: string; name?: string; email?: string }> }>> = await this.api.get(`/clubs/${clubId}/requests`);

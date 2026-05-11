@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { ArchiveBoxIcon, UserPlusIcon, UsersIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 import InviteByEmailModal from '../components/InviteByEmailModal';
 
-const ClubBooks: React.FC = () => {
+const ClubMemberPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
@@ -24,7 +24,6 @@ const ClubBooks: React.FC = () => {
   const scrollRefs = React.useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Resolve slug → clubId on mount
-  // If the param is already a UUID (legacy links), use it directly
   useEffect(() => {
     if (!slug) return;
     const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -52,35 +51,19 @@ const ClubBooks: React.FC = () => {
     try {
       const res = await apiService.getClub(clubId);
       setClub(res);
-    } catch {
-      // club info is optional — continue without it
+      
+      // If we've resolved the club and find the user is NOT a member, redirect to landing page
+      if (!res.isMember && res.userStatus !== 'active' && !['admin', 'owner', 'member'].includes(res.userRole || '')) {
+        console.log('[ClubMemberPage] User not a member, redirecting to explore page');
+        navigate(`/explore/${slug}`, { replace: true });
+      }
+    } catch (err: any) {
+      console.error('[ClubMemberPage] Failed to fetch club:', err);
+      if (err?.response?.status === 403) {
+        navigate(`/explore/${slug}`, { replace: true });
+      }
     }
-  }, [clubId]);
-
-  // Re-fetch club when authentication changes to get membership status
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchClub();
-    }
-  }, [isAuthenticated, fetchClub]);
-
-  const handleRequestJoin = async () => {
-    if (!isAuthenticated) {
-      navigate('/login', { state: { from: window.location.pathname } });
-      return;
-    }
-    if (!clubId) return;
-    try {
-      setJoining(true);
-      setJoinError('');
-      await apiService.requestClubJoin(clubId);
-      setClub(prev => prev ? { ...prev, userStatus: 'pending' } : prev);
-    } catch (e: any) {
-      setJoinError(e.message || 'Failed to send join request');
-    } finally {
-      setJoining(false);
-    }
-  };
+  }, [clubId, slug, navigate]);
 
   const fetchBooks = useCallback(async (token?: string | null) => {
     if (!clubId) return;
@@ -154,13 +137,6 @@ const ClubBooks: React.FC = () => {
     );
   }
 
-  const canRequestJoin =
-    club &&
-    !club.isMember &&
-    !['admin', 'member', 'owner'].includes(club.userRole || '') &&
-    club.createdBy !== user?.userId &&
-    club.userStatus !== 'active';
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -187,24 +163,6 @@ const ClubBooks: React.FC = () => {
                   <span className="text-indigo-600 font-bold">{books.length}</span> items available
                 </p>
               </div>
-
-              {/* Join / pending for non-members */}
-              {canRequestJoin && (
-                club.userStatus === 'pending' ? (
-                  <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                    Request Sent
-                  </span>
-                ) : (
-                  <button
-                    onClick={handleRequestJoin}
-                    disabled={joining}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm"
-                  >
-                    <UserPlusIcon className="h-4 w-4" />
-                    {joining ? 'Sending…' : (isAuthenticated ? 'Request to Join' : 'Join Club')}
-                  </button>
-                )
-              )}
 
               {club && (club.isMember || club.userRole === 'admin') && (
                 <button
@@ -347,4 +305,4 @@ const ClubBooks: React.FC = () => {
 };
 
 
-export default ClubBooks;
+export default ClubMemberPage;
