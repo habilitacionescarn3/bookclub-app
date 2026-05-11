@@ -64,14 +64,18 @@ exports.handler = async (event) => {
     }
 
     // Return club with user's membership info
-    const result = {
-      ...club,
-      isMember,
-      userRole,
-      userStatus,
+    const response = success(result);
+    
+    // Manual CORS headers to bypass API Gateway config issues
+    response.headers = {
+      ...response.headers,
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Access-Token, x-access-token',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
     };
 
-    return success(result);
+    return response;
   } catch (err) {
     console.error('Error getting club:', err);
     return error(err.message || 'Failed to get club', 500);

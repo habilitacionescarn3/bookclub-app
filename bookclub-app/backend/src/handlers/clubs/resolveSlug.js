@@ -17,16 +17,18 @@ exports.handler = async (event) => {
     }
 
     // Return minimal set of public data for branding
-    const result = {
-      clubId: club.clubId,
-      name: club.name,
-      slug: club.slug,
-      description: club.description,
-      location: club.location,
-      isPrivate: club.isPrivate || false,
+    const response = success({ club: result });
+    
+    // Manual CORS headers
+    response.headers = {
+      ...response.headers,
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Access-Token, x-access-token',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
     };
 
-    return success({ club: result });
+    return response;
   } catch (err) {
     console.error('Error resolving club slug:', err);
     return error(err.message || 'Failed to resolve club', 500);
