@@ -13,32 +13,20 @@ exports.handler = async (event) => {
     // Auth: prefer authorizer claims, fallback to token validation (OPTIONAL for public access)
     const claims = event?.requestContext?.authorizer?.claims;
     let userId = claims?.sub;
-    
-    console.log(`DEBUG [getClub]: Starting auth check. userId from claims: ${userId}`);
-    
     if (!userId) {
       const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
       const accessTokenHeader = (event.headers && (event.headers['X-Access-Token'] || event.headers['x-access-token'])) || '';
       
-      console.log(`DEBUG [getClub]: Headers present - Authorization: ${!!authHeader}, X-Access-Token: ${!!accessTokenHeader}`);
-      
-      // CRITICAL: We MUST use the Access Token for User.getCurrentUser (Cognito API)
-      // ID Tokens will cause an error.
       const token = accessTokenHeader || (authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader || null);
       
       if (token && token !== 'null') {
         try {
-          console.log('DEBUG [getClub]: Attempting to fetch user with token...');
           const currentUser = await User.getCurrentUser(token);
-          if (currentUser) {
-            userId = currentUser.userId;
-            console.log(`DEBUG [getClub]: Identity resolved from token. userId: ${userId}`);
-          }
+          if (currentUser) userId = currentUser.userId;
         } catch (err) {
-          console.warn(`DEBUG [getClub]: Identity resolution failed: ${err.message}`);
+          // If token is present but invalid, we still allow public access, just without identity
+          console.warn('Invalid token provided for getClub, falling back to public view');
         }
-      } else {
-        console.log('DEBUG [getClub]: No valid token found in headers.');
       }
     }
 
@@ -64,18 +52,14 @@ exports.handler = async (event) => {
     }
 
     // Return club with user's membership info
-    const response = success(result);
-    
-    // Manual CORS headers to bypass API Gateway config issues
-    response.headers = {
-      ...response.headers,
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Access-Token, x-access-token',
-      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    const result = {
+      ...club,
+      isMember,
+      userRole,
+      userStatus,
     };
 
-    return response;
+    return success(result);
   } catch (err) {
     console.error('Error getting club:', err);
     return error(err.message || 'Failed to get club', 500);

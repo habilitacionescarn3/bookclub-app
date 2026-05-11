@@ -178,7 +178,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -203,7 +202,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -252,7 +250,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -274,7 +271,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -296,7 +292,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -319,7 +314,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -341,7 +335,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -363,7 +356,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -385,7 +377,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -407,7 +398,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -429,7 +419,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -451,7 +440,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -469,7 +457,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -487,7 +474,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -509,7 +495,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -532,7 +517,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -555,7 +539,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -573,7 +556,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -591,7 +573,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -613,7 +594,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -636,7 +616,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -658,7 +637,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -681,7 +659,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -704,7 +681,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -726,7 +702,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -748,7 +723,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -771,7 +745,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -794,7 +767,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -906,7 +878,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -927,7 +898,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -945,7 +915,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -963,7 +932,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -985,7 +953,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1007,7 +974,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1029,7 +995,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1051,7 +1016,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1074,7 +1038,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1093,7 +1056,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1115,7 +1077,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1137,7 +1098,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1159,7 +1119,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1181,7 +1140,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1203,7 +1161,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1225,7 +1182,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
             allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
@@ -1244,7 +1200,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
             allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
@@ -1263,7 +1218,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
             allowCredentials: true
           authorizer:
             type: COGNITO_USER_POOLS
@@ -1283,7 +1237,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1306,7 +1259,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1324,7 +1276,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
 
   createLostFound:
     handler: src/handlers/lost-found/create.handler
@@ -1338,7 +1289,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1360,7 +1310,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1382,7 +1331,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1404,7 +1352,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1451,7 +1398,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1469,7 +1415,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1488,7 +1433,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1506,7 +1450,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1528,7 +1471,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1546,7 +1488,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1568,7 +1509,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1591,7 +1531,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
@@ -1610,7 +1549,6 @@ functions:
               - Content-Type
               - Authorization
               - X-Access-Token
-              - x-access-token
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
