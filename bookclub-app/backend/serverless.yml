@@ -736,6 +736,112 @@ functions:
             authorizerId:
               Ref: ApiGatewayAuthorizer
 
+  # Club posts and comments
+  createPost:
+    handler: src/handlers/posts/create.handler
+    events:
+      - http:
+          method: POST
+          path: /posts
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
+  listPostsFeed:
+    handler: src/handlers/posts/listFeed.handler
+    events:
+      - http:
+          method: GET
+          path: /posts/feed
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
+  deletePost:
+    handler: src/handlers/posts/delete.handler
+    events:
+      - http:
+          method: DELETE
+          path: /posts/{postId}
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
+  createComment:
+    handler: src/handlers/comments/create.handler
+    events:
+      - http:
+          method: POST
+          path: /posts/{postId}/comments
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
+  deleteComment:
+    handler: src/handlers/comments/delete.handler
+    events:
+      - http:
+          method: DELETE
+          path: /posts/{postId}/comments/{commentId}
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
   # Image metadata extraction
   extractImageMetadata:
     handler: src/handlers/images/extractMetadata.handler
@@ -923,6 +1029,27 @@ functions:
               - X-Api-Key
               - X-Amz-Security-Token
             allowCredentials: true
+
+  listClubPosts:
+    handler: src/handlers/posts/listByClub.handler
+    events:
+      - http:
+          method: GET
+          path: /clubs/{clubId}/posts
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   listUserClubs:
     handler: src/handlers/clubs/list.handler

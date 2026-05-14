@@ -3,6 +3,8 @@ const SERVICE_NAME = 'bookclub-app';
 
 const tableNames = {
   books: `${SERVICE_NAME}-books-${STAGE}`,
+  posts: `${SERVICE_NAME}-posts-${STAGE}`,
+  comments: `${SERVICE_NAME}-comments-${STAGE}`,
   users: `${SERVICE_NAME}-users-${STAGE}`,
   'metadata-cache': `${SERVICE_NAME}-metadata-cache-${STAGE}`,
   'bookclub-groups': `${SERVICE_NAME}-bookclub-groups-${STAGE}`,
