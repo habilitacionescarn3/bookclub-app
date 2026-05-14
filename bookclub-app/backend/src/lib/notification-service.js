@@ -77,7 +77,7 @@ async function sendEmail(to, subject, text, html) {
     return { MessageId: 'offline-mock-id' };
   }
 
-  const from = process.env.NOTIFY_FROM_EMAIL || 'notify@booklub.shop';
+  const from = process.env.NOTIFY_FROM_EMAIL || 'notify@townwink.com';
   const params = {
     Source: from,
     Destination: { ToAddresses: [to] },

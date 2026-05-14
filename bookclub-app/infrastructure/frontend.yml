@@ -12,7 +12,7 @@ Parameters:
   
   DomainName:
     Type: String
-    Default: dev.booklub.shop
+    Default: dev.townwink.com
     Description: Domain name for the frontend
   
   CertificateArn:

@@ -25,7 +25,7 @@ const SEO: React.FC<SEOProps> = ({
 }) => {
   useEffect(() => {
     // 1. Update Document Title
-    const fullTitle = title.includes('NearBorrow') ? title : `${title} — NearBorrow`;
+    const fullTitle = title.includes('TownWink') ? title : `${title} — TownWink`;
     document.title = fullTitle;
 
     // 2. Helper to set meta tags

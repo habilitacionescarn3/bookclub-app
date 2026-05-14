@@ -1,9 +1,9 @@
 {
   "region": "us-east-1",
-  "apiCustomDomain": "api.booklub.shop",
-  "userPoolDomainPrefix": "booklub",
+  "apiCustomDomain": "api.townwink.com",
+  "userPoolDomainPrefix": "townwink",
   "oauth": {
-    "redirectSignIn": "https://booklub.shop/auth/callback",
-    "redirectSignOut": "https://booklub.shop/"
+    "redirectSignIn": "https://townwink.com/auth/callback",
+    "redirectSignOut": "https://townwink.com/"
   }
 }

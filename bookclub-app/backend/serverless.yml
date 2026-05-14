@@ -16,7 +16,7 @@ provider:
     COGNITO_USER_POOL_ID: !Ref UserPool
     COGNITO_CLIENT_ID: !Ref UserPoolClient
     BOOK_COVERS_BUCKET: ${self:service}-${self:provider.stage}-book-covers
-    NOTIFY_FROM_EMAIL: ${env:NOTIFY_FROM_EMAIL, 'notify@booklub.shop'}
+    NOTIFY_FROM_EMAIL: ${env:NOTIFY_FROM_EMAIL, 'notify@townwink.com'}
     ADMIN_NOTIFY_EMAIL: ${env:ADMIN_NOTIFY_EMAIL, 'madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com'}
     CONTACT_RECIPIENTS: ${env:CONTACT_RECIPIENTS, 'madhukar.goud@gmail.com,madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com'}
     EVENT_BUS_NAME: ${env:EVENT_BUS_NAME, 'default'}
@@ -36,7 +36,7 @@ provider:
     # SQS queue for Bedrock analyzer worker
     BEDROCK_ANALYZE_QUEUE_URL: !Ref BedrockAnalyzeQueue
     # Base URL for generating absolute links in sitemap
-    SITE_BASE_URL: ${env:SITE_BASE_URL, 'https://booklub.shop'}
+    SITE_BASE_URL: ${env:SITE_BASE_URL, 'https://townwink.com'}
     # Bedrock throttle tuning
     BEDROCK_MAX_ATTEMPTS: ${env:BEDROCK_MAX_ATTEMPTS, '8'}
     BEDROCK_BACKOFF_BASE_MS: ${env:BEDROCK_BACKOFF_BASE_MS, '2000'} # start at 2s
@@ -1834,10 +1834,10 @@ resources:
           RefreshToken: days
         CallbackURLs:
           - ${self:custom.appConfig.oauth.redirectSignIn}
-          - https://nearborrow.com.au/auth/callback
+          - https://townwink.com/auth/callback
         LogoutURLs:
           - ${self:custom.appConfig.oauth.redirectSignOut}
-          - https://nearborrow.com.au
+          - https://townwink.com
 
     GoogleIdentityProvider:
       Type: AWS::CloudFormation::CustomResource

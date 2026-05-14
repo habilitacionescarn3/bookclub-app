@@ -20,7 +20,7 @@ export const useSubdomain = (): SubdomainInfo => {
     const parts = hostname.split('.');
     
     // For local development (localhost) or typical domains
-    // e.g., fegentroad.booklub.shop -> fegentroad
+    // e.g., fegentroad.townwink.com -> fegentroad
     // e.g., localhost:3000 -> null
     // e.g., fegentroad.localhost -> fegentroad
     
