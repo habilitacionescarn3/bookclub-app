@@ -100,10 +100,20 @@ const withClubOwner = (handler) => withUser(async (event, context) => {
   return handler(event, context);
 });
 
+/**
+ * Resolves userId if available, but allows unauthenticated requests.
+ */
+const withOptionalAuth = (handler) => async (event, context) => {
+  const userId = await getAuthenticatedUserId(event);
+  event.userId = userId;
+  return handler(event, context);
+};
+
 module.exports = {
   withAuth,
   withUser,
   withAdmin,
   withClubAdmin,
   withClubOwner,
+  withOptionalAuth,
 };
