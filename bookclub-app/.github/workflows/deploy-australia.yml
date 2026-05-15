@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     name: Deploy to Australia (us-east-1)
@@ -25,8 +29,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_AUSTRALIA }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_AUSTRALIA }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN_AUSTRALIA }}
           aws-region: us-east-1
 
       - name: Setup Terraform

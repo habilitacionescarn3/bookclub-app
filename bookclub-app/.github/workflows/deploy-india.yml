@@ -6,6 +6,10 @@ on:
       - release
   workflow_dispatch:
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     name: Deploy to India (ap-south-1)
@@ -25,8 +29,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_INDIA }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_INDIA }}
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN_INDIA }}
           aws-region: ap-south-1
 
       - name: Setup Terraform
