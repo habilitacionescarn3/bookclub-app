@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUploadModal } from '../contexts/UploadModalContext';
 import { apiService } from '../services/api';
 import { useSubdomain } from '../hooks/useSubdomain';
+import { useBrand } from '../contexts/BrandContext';
 import { config } from '../config';
 
 import MobileTabBar from './MobileTabBar';
@@ -11,6 +12,7 @@ import MobileTabBar from './MobileTabBar';
 const Navbar: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { isSubdomain, club } = useSubdomain();
+  const { name: brandName } = useBrand();
   const { openModal } = useUploadModal();
   const location = useLocation();
   const [profileOpen, setProfileOpen] = useState(false);
@@ -89,7 +91,7 @@ const Navbar: React.FC = () => {
               <Link to="/" className="flex items-center flex-shrink-0">
                 <img
                   src={`${process.env.PUBLIC_URL || ''}/logo.png`}
-                  alt="Community Library"
+                  alt={brandName}
                   className="h-8 w-auto"
                 />
               </Link>

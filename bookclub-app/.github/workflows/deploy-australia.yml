@@ -1,0 +1,79 @@
+name: Deploy NearBorrow (Australia)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Australia (us-east-1)
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: 'bookclub-app/backend/package-lock.json'
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_AUSTRALIA }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_AUSTRALIA }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.0
+
+      - name: 🏗️ Deploy Infrastructure (Terraform)
+        working-directory: bookclub-app/backend/terraform
+        run: |
+          terraform init -reconfigure \
+            -backend-config="bucket=bookclub-australia-terraform-state" \
+            -backend-config="region=us-east-1" \
+            -backend-config="key=terraform.tfstate"
+          terraform apply -var-file="australia.tfvars" -auto-approve
+
+      - name: 📦 Deploy Backend (Serverless)
+        working-directory: bookclub-app/backend
+        run: |
+          npm install
+          npx serverless deploy --stage australia --region us-east-1
+
+      - name: 🎨 Build Frontend (React)
+        working-directory: bookclub-app/frontend
+        run: |
+          # Fetch dynamic values from serverless output
+          cd ../backend
+          USER_POOL_ID=$(npx serverless info --stage australia --verbose | grep "UserPoolId:" | awk '{print $2}')
+          USER_POOL_CLIENT_ID=$(npx serverless info --stage australia --verbose | grep "UserPoolClientId:" | awk '{print $2}')
+          cd ../frontend
+          
+          # Create .env.production
+          cat > .env.production << EOF
+          REACT_APP_BRAND_NAME=NearBorrow
+          REACT_APP_API_URL=https://api.booklub.shop
+          REACT_APP_COGNITO_REGION=us-east-1
+          REACT_APP_COGNITO_USER_POOL_ID=$USER_POOL_ID
+          REACT_APP_COGNITO_CLIENT_ID=$USER_POOL_CLIENT_ID
+          REACT_APP_COGNITO_DOMAIN=booklub-au-australia.auth.us-east-1.amazoncognito.com
+          REACT_APP_OAUTH_REDIRECT_SIGNIN=https://booklub.shop/auth/callback
+          REACT_APP_OAUTH_REDIRECT_SIGNOUT=https://booklub.shop/
+          REACT_APP_DOMAIN=booklub.shop
+          EOF
+          
+          npm install
+          npm run build
+
+      - name: 📤 Upload to S3
+        run: |
+          aws s3 sync bookclub-app/frontend/build s3://booklub-au-frontend --delete

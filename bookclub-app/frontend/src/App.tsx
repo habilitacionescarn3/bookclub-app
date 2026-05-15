@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { BrandProvider } from './contexts/BrandContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { UploadModalProvider, useUploadModal, GENERIC_UPLOAD_CONFIG } from './contexts/UploadModalContext';
 import CreateListingModal from './components/CreateListingModal';
@@ -61,7 +62,8 @@ function App() {
     <Router>
       <ScrollToTop />
       <NotificationProvider>
-        <AuthProvider>
+        <BrandProvider>
+          <AuthProvider>
           <UploadModalProvider>
           <div className="App">
             <GlobalUploadModal />
@@ -237,7 +239,8 @@ function App() {
           </div>
           </UploadModalProvider>
         </AuthProvider>
-      </NotificationProvider>
+      </BrandProvider>
+    </NotificationProvider>
     </Router>
   );
 }

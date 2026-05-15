@@ -1,0 +1,11 @@
+{
+  "region": "ap-south-1",
+  "apiCustomDomain": "api.townwink.com",
+  "userPoolDomainPrefix": "townwink-india",
+  "oauth": {
+    "redirectSignIn": "https://townwink.com/auth/callback",
+    "redirectSignOut": "https://townwink.com/"
+  },
+  "BRAND": "TownWink",
+  "NOTIFY_FROM_EMAIL": "notify@townwink.com"
+}
