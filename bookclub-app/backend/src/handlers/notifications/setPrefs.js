@@ -1,23 +1,22 @@
-const { success, error } = require('../../lib/response');
-const { setUserPrefs } = require('../../lib/notification-service');
+const { z } = require('zod');
+const response = require('../../lib/response');
+const NotificationService = require('../../services/notification-service');
 const { withAuth } = require('../../lib/middleware');
 
+const PrefsSchema = z.object({
+  emailOptIn: z.boolean().optional(),
+  prefs: z.record(z.any()).optional(),
+}).strict();
+
+/**
+ * Handler for updating user notification preferences.
+ */
 const handler = async (event) => {
-  try {
-    const { userId } = event;
-    if (!event.body) return error('Request body is required', 400);
-    const payload = JSON.parse(event.body);
-    const updates = {};
+  const body = JSON.parse(event.body || '{}');
+  const data = PrefsSchema.parse(body);
 
-    if (typeof payload.emailOptIn === 'boolean') updates.emailOptIn = payload.emailOptIn;
-    if (payload.prefs && typeof payload.prefs === 'object') updates.prefs = payload.prefs;
-
-    const result = await setUserPrefs(userId, updates);
-    return success(result);
-  } catch (err) {
-    console.error('Error updating notification prefs:', err);
-    return error(err.message || 'Failed to update notification preferences', 500);
-  }
+  const result = await NotificationService.setPrefs(event.userId, data);
+  return response.success(result);
 };
 
 module.exports.handler = withAuth(handler);

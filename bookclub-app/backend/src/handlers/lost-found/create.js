@@ -1,41 +1,36 @@
-const LostFound = require('../../models/lost-found');
-const BookClub = require('../../models/bookclub');
+const { z } = require('zod');
 const response = require('../../lib/response');
-const { publishEvent } = require('../../lib/event-bus');
+const BookService = require('../../services/book-service');
 const { withAuth } = require('../../lib/middleware');
 
+const CreateLostFoundSchema = z.object({
+  clubId: z.string().min(1, 'clubId is required'),
+  title: z.string().min(1, 'title is required').max(100),
+  description: z.string().max(1000).optional(),
+  itemType: z.string().optional(),
+  foundLocation: z.string().max(200).optional(),
+  foundDate: z.string().optional(),
+  images: z.array(z.string()).optional(),
+});
+
+/**
+ * Handler for creating a new Lost & Found entry.
+ * Note: Lost & Found items are now consolidated into the 'books' table.
+ */
 const handler = async (event) => {
-  try {
-    const { userId } = event;
-    const body = JSON.parse(event.body || '{}');
-    const { clubId, title, description, itemType, foundLocation, foundDate, images } = body;
-
-    if (!clubId) return response.error('clubId is required', 400);
-    if (!title || !title.trim()) return response.error('title is required', 400);
-
-    const isMember = await BookClub.isMember(clubId, userId);
-    if (!isMember) return response.forbidden('You must be an active club member to post Lost & Found items');
-
-    const item = await LostFound.create({ clubId, title, description, itemType, foundLocation, foundDate, images }, userId);
-    
-    if (item.images && item.images.length > 0) {
-      try {
-        await publishEvent('LostFound.ImageAnalysisRequested', {
-          lostFoundId: item.lostFoundId,
-          clubId: item.clubId,
-          userId: userId,
-          images: item.images
-        });
-      } catch (evtErr) {
-        console.error('[LostFound] Failed to publish ImageAnalysisRequested event', evtErr);
-      }
-    }
-    
-    return response.success(item, 201);
-  } catch (err) {
-    console.error('[LostFound] create error:', err);
-    return response.error(err.message || 'Failed to create lost & found item', 500);
-  }
+  const body = JSON.parse(event.body || '{}');
+  
+  // Validate input
+  const data = CreateLostFoundSchema.parse(body);
+  
+  // Create item as a 'lost_found' category book
+  const item = await BookService.create({
+    ...data,
+    category: 'lost_found',
+    status: 'available',
+  }, event.userId);
+  
+  return response.success(item, 201);
 };
 
 module.exports.handler = withAuth(handler);

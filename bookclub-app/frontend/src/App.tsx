@@ -39,7 +39,6 @@ import LostFoundHub from './pages/LostFoundHub';
 import LostFoundDetails from './pages/LostFoundDetails';
 import MyLostFound from './pages/MyLostFound';
 import { LIBRARY_CONFIGS } from './config/libraryConfig';
-import { useSubdomain } from './hooks/useSubdomain';
 
 function GlobalUploadModal() {
   const { isOpen, closeModal } = useUploadModal();
@@ -48,15 +47,6 @@ function GlobalUploadModal() {
 }
 
 function App() {
-  const { isSubdomain, isLoading } = useSubdomain();
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-      </div>
-    );
-  }
 
   return (
     <Router>
@@ -183,7 +173,7 @@ function App() {
                 />
                 <Route
                   path="/"
-                  element={<Navigate to={isSubdomain ? "/library/books" : "/library"} replace />}
+                  element={<Navigate to="/library" replace />}
                 />
                 <Route
                   path="/clubs/browse"

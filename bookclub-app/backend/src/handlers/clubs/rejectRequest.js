@@ -1,18 +1,20 @@
-const { success, error } = require('../../lib/response');
-const BookClub = require('../../models/bookclub');
+const response = require('../../lib/response');
+const ClubService = require('../../services/club-service');
 const { withClubAdmin } = require('../../lib/middleware');
 
+/**
+ * Handler for rejecting a club join request.
+ */
 const handler = async (event) => {
-  try {
-    const clubId = event?.pathParameters?.clubId;
-    const targetUserId = event?.pathParameters?.userId;
-    if (!clubId || !targetUserId) return error('clubId and userId are required', 400);
-
-    await BookClub.rejectJoinRequest(clubId, targetUserId);
-    return success({ rejected: true });
-  } catch (e) {
-    return error(e.message || 'Failed to reject join request', 500);
+  const { clubId, userId: targetUserId } = event.pathParameters || {};
+  
+  if (!clubId || !targetUserId) {
+    return response.validationError({ message: 'clubId and userId are required' });
   }
+
+  await ClubService.rejectRequest(clubId, targetUserId);
+  
+  return response.success({ rejected: true });
 };
 
 module.exports.handler = withClubAdmin(handler);

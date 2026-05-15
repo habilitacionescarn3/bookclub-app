@@ -9,19 +9,18 @@
     "status": "available",
     "createdAt": "2025-08-31T05:40:11.470Z",
     "updatedAt": "2026-04-11T09:33:53.558Z",
-    "clubId": "club-fiction-001"
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f"
   },
   "476aabcf-3f2d-4848-959a-c36d5a32606d": {
     "bookId": "476aabcf-3f2d-4848-959a-c36d5a32606d",
-    "userId": "local-user",
-    "title": "Clean Code",
-    "author": "Robert C. Martin",
-    "description": "A handbook of agile software craftsmanship.",
+    "userId": "local-user-2",
+    "title": "Neuromancer",
+    "author": "William Gibson",
+    "description": "The novel that defined the cyberpunk genre.",
     "coverImage": null,
     "status": "available",
     "createdAt": "2025-08-31T05:40:29.470Z",
-    "updatedAt": "2026-04-11T09:33:46.104Z",
-    "clubId": "club-fiction-001"
+    "updatedAt": "2026-04-11T09:33:46.104Z"
   },
   "a1b2c3d4-0001-0001-0001-000000000001": {
     "bookId": "a1b2c3d4-0001-0001-0001-000000000001",
@@ -34,10 +33,9 @@
     "lentToUserId": "local-user-2",
     "lentToUserName": "Jane Reader",
     "category": "book",
-    "lentAt": "2026-04-01T09:00:00.000Z",
     "createdAt": "2026-03-01T09:00:00.000Z",
     "updatedAt": "2026-04-01T09:00:00.000Z",
-    "clubId": "club-fiction-001"
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f"
   },
   "a1b2c3d4-0002-0002-0002-000000000002": {
     "bookId": "a1b2c3d4-0002-0002-0002-000000000002",
@@ -50,58 +48,48 @@
     "lentToUserId": "local-user",
     "lentToUserName": "Local Dev",
     "category": "book",
-    "lentAt": "2026-04-05T09:00:00.000Z",
     "createdAt": "2026-03-10T09:00:00.000Z",
     "updatedAt": "2026-04-05T09:00:00.000Z",
-    "clubId": "club-scifi-002"
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f"
   },
   "seed-lent-1": {
     "bookId": "seed-lent-1",
-    "userId": "local-user",
+    "userId": "local-user-2",
     "title": "Deep Work",
     "author": "Cal Newport",
     "description": "Rules for focused success in a distracted world.",
     "category": "book",
     "coverImage": null,
-    "status": "borrowed",
-    "lentToUserId": "user-3",
-    "lentToUserName": "Alice Wonderland",
-    "lentAt": "2026-04-20T10:00:00.000Z",
+    "status": "available",
     "createdAt": "2026-03-15T09:00:00.000Z",
-    "updatedAt": "2026-04-20T10:00:00.000Z",
-    "clubId": "club-fiction-001"
+    "updatedAt": "2026-03-15T09:00:00.000Z",
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f"
   },
   "seed-lent-2": {
     "bookId": "seed-lent-2",
-    "userId": "local-user",
+    "userId": "user-3",
     "title": "Goodnight Moon",
     "author": "Margaret Wise Brown",
     "description": "A beloved children's bedtime classic.",
     "category": "book",
     "coverImage": null,
-    "status": "borrowed",
-    "lentToUserId": "user-4",
-    "lentToUserName": "Charlie Brown",
-    "lentAt": "2026-04-22T14:00:00.000Z",
+    "status": "available",
     "createdAt": "2026-02-10T09:00:00.000Z",
-    "updatedAt": "2026-04-22T14:00:00.000Z",
-    "clubId": "club-fiction-001"
+    "updatedAt": "2026-02-10T09:00:00.000Z",
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f"
   },
   "seed-borrowed-1": {
     "bookId": "seed-borrowed-1",
-    "userId": "user-5",
+    "userId": "user-3",
     "title": "The Very Hungry Caterpillar",
     "author": "Eric Carle",
     "description": "A colourful classic for young readers.",
     "category": "book",
     "coverImage": null,
-    "status": "borrowed",
-    "lentToUserId": "local-user",
-    "lentToUserName": "Local Dev",
-    "lentAt": "2026-04-18T08:00:00.000Z",
-    "createdAt": "2026-01-20T09:00:00.000Z",
-    "updatedAt": "2026-04-18T08:00:00.000Z",
-    "clubId": "club-scifi-002"
+    "status": "available",
+    "createdAt": "2026-03-18T08:00:00.000Z",
+    "updatedAt": "2026-03-18T08:00:00.000Z",
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f"
   },
   "e3ac8366-d886-452b-9e73-b4c3e9eb4e4e": {
     "bookId": "e3ac8366-d886-452b-9e73-b4c3e9eb4e4e",
@@ -196,17 +184,6 @@
     "clubId": "club-nonfiction-003",
     "createdAt": "2026-04-16T09:15:00.000Z",
     "updatedAt": "2026-04-16T09:15:00.000Z"
-  },
-  "test-event-1": {
-    "bookId": "test-event-1",
-    "userId": "test-user-123",
-    "title": "Party Marquee (3x3m)",
-    "description": "Waterproof pop-up marquee, perfect for hostings.",
-    "category": "event_hire",
-    "status": "available",
-    "clubId": "club-nonfiction-003",
-    "createdAt": "2026-04-16T09:20:00.000Z",
-    "updatedAt": "2026-04-16T09:20:00.000Z"
   },
   "test-other-1": {
     "bookId": "test-other-1",

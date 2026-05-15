@@ -1,55 +1,34 @@
-const BookClub = require('../../models/bookclub');
-const { success, error } = require('../../lib/response');
+const { z } = require('zod');
+const response = require('../../lib/response');
+const ClubService = require('../../services/club-service');
 const { withAuth } = require('../../lib/middleware');
 
-const handler = async (event) => {
-  try {
-    const body = parseBody(event);
-    if (!body) return error('Request body is required', 400);
-
-    const validationErr = validateBody(body);
-    if (validationErr) return validationErr;
-
-    const { userId } = event;
-
-    const clubData = buildClubData(body);
-    const club = await BookClub.create(clubData, userId);
-    return success(club);
-  } catch (err) {
-    console.error('Error creating club:', err);
-    return error(err.message || 'Failed to create club', err.statusCode || 500);
-  }
-};
-
-const parseBody = (event) => {
-  if (!event?.body) return null;
-  try { return JSON.parse(event.body); } catch { return null; }
-};
-
-const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-const validateBody = ({ name, description, location, memberLimit, slug }) => {
-  if (!name || name.trim().length === 0) return error('Club name is required', 400);
-  if (!location || location.trim().length === 0) return error('Location is required', 400);
-  if (location.length > 100) return error('Location must be 100 characters or less', 400);
-  if (name.length > 100) return error('Club name must be 100 characters or less', 400);
-  if (description && description.length > 500) return error('Club description must be 500 characters or less', 400);
-  if (memberLimit && (memberLimit < 2 || memberLimit > 1000)) return error('Member limit must be between 2 and 1000', 400);
-  if (slug !== undefined && slug !== null && slug !== '') {
-    const s = slug.trim();
-    if (s.length > 60) return error('Slug must be 60 characters or less', 400);
-    if (!SLUG_RE.test(s)) return error('Slug may only contain lowercase letters, numbers, and hyphens (e.g. my-book-club)', 400);
-  }
-  return null;
-};
-
-const buildClubData = ({ name, description, location, isPrivate, memberLimit, slug }) => ({
-  name: name.trim(),
-  slug: slug ? slug.trim() : undefined,
-  description: description?.trim() || '',
-  location: location.trim(),
-  isPrivate: !!isPrivate,
-  memberLimit: memberLimit || null,
+const CreateClubSchema = z.object({
+  name: z.string().min(1, 'Club name is required').max(100, 'Club name must be 100 characters or less'),
+  location: z.string().min(1, 'Location is required').max(100, 'Location must be 100 characters or less'),
+  description: z.string().max(500, 'Description must be 500 characters or less').optional(),
+  slug: z.string()
+    .min(1, 'Slug cannot be empty')
+    .max(60, 'Slug must be 60 characters or less')
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug may only contain lowercase letters, numbers, and hyphens')
+    .optional(),
+  isPrivate: z.boolean().default(false),
+  memberLimit: z.number().int().min(2).max(1000).optional(),
 });
+
+/**
+ * Handler for creating a new book club.
+ */
+const handler = async (event) => {
+  const body = JSON.parse(event.body || '{}');
+  
+  // Validate input
+  const data = CreateClubSchema.parse(body);
+  
+  // Create club
+  const club = await ClubService.create(data, event.userId);
+  
+  return response.success(club);
+};
 
 module.exports.handler = withAuth(handler);

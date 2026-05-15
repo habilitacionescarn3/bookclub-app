@@ -23,7 +23,7 @@ const Login: React.FC = () => {
         <div>
           <div className="flex justify-center mb-4 sm:mb-6">
             <img 
-              src="/logo.png" 
+              src="/townwink-logo.png" 
               alt="TownWink" 
               className="h-16 w-auto sm:h-24"
             />

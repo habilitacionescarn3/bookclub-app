@@ -1,61 +1,39 @@
-const User = require('../../models/user');
+const { z } = require('zod');
 const response = require('../../lib/response');
+const UserService = require('../../services/user-service');
 const { withAuth } = require('../../lib/middleware');
 
+const UpdateProfileSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100).optional(),
+  bio: z.string().max(500).optional(),
+  profilePicture: z.string().url('Invalid profile picture URL').optional().nullable(),
+  timezone: z.string().refine((val) => {
+    if (val === 'UTC') return true;
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: val });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }, { message: 'Invalid timezone' }).optional(),
+}).strict();
+
+/**
+ * Handler for updating user profile.
+ */
 const handler = async (event) => {
-  try {
-    const { userId } = event;
-    const data = JSON.parse(event.body);
+  const body = JSON.parse(event.body || '{}');
+  
+  // Validate input
+  const updates = UpdateProfileSchema.parse(body);
 
-    // Validate input - only allow certain fields to be updated
-    const allowedUpdates = ['name', 'bio', 'profilePicture', 'timezone'];
-    const updates = {};
-
-    Object.keys(data).forEach(key => {
-      if (allowedUpdates.includes(key) && data[key] !== undefined) {
-        updates[key] = data[key];
-      }
-    });
-
-    if (Object.keys(updates).length === 0) {
-      return response.validationError({
-        message: 'No valid fields to update',
-      });
-    }
-
-    // Validate timezone if provided
-    if (updates.timezone) {
-      const validTimezones = Intl.supportedValuesOf('timeZone');
-      // Accept "UTC" as a special case since it's used by the frontend but not in Intl.supportedValuesOf
-      if (updates.timezone !== 'UTC' && !validTimezones.includes(updates.timezone)) {
-        return response.validationError({
-          timezone: 'Invalid timezone',
-        });
-      }
-    }
-
-    const updatedUser = await User.update(userId, updates);
-    
-    if (!updatedUser) {
-      return response.notFound('User not found');
-    }
-
-    // Return only necessary user data
-    const userData = {
-      userId: updatedUser.userId,
-      email: updatedUser.email,
-      name: updatedUser.name,
-      bio: updatedUser.bio,
-      profilePicture: updatedUser.profilePicture,
-      timezone: updatedUser.timezone,
-      createdAt: updatedUser.createdAt,
-    };
-
-    return response.success(userData);
-  } catch (error) {
-    console.error('Error updating profile:', error);
-    return response.error(error);
+  if (Object.keys(updates).length === 0) {
+    return response.validationError({ message: 'No valid fields to update' });
   }
+
+  const user = await UserService.updateProfile(event.userId, updates);
+  
+  return response.success(user);
 };
 
 module.exports.handler = withAuth(handler);

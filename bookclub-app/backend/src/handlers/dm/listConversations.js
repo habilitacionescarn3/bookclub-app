@@ -1,17 +1,21 @@
-const { success, error } = require('../../lib/response');
-const DM = require('../../models/dm');
+const { z } = require('zod');
+const response = require('../../lib/response');
+const DMService = require('../../services/dm-service');
 const { withAuth } = require('../../lib/middleware');
 
+const ListConversationsSchema = z.object({
+  limit: z.preprocess((val) => parseInt(val, 10), z.number().int().min(1).max(100).default(20)),
+}).strict();
+
+/**
+ * Handler for listing user conversations.
+ */
 const handler = async (event) => {
-  try {
-    const { userId } = event;
-    const limit = event.queryStringParameters?.limit ? parseInt(event.queryStringParameters.limit, 10) : 20;
-    const list = await DM.listConversationsForUser(userId, Math.min(Math.max(limit, 1), 100));
-    return success(list);
-  } catch (e) {
-    console.error('Error listing conversations:', e);
-    return error(e.message || 'Failed to list conversations', 500);
-  }
+  const qs = event.queryStringParameters || {};
+  const { limit } = ListConversationsSchema.parse(qs);
+
+  const list = await DMService.listConversations(event.userId, limit);
+  return response.success(list);
 };
 
 module.exports.handler = withAuth(handler);
