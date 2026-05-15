@@ -21,6 +21,7 @@ provider:
     CONTACT_RECIPIENTS: ${env:CONTACT_RECIPIENTS, 'madhukar.goud@gmail.com,madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com'}
     EVENT_BUS_NAME: ${env:EVENT_BUS_NAME, 'default'}
     EVENT_BUS_SOURCE: ${env:EVENT_BUS_SOURCE, 'bookclub.app'}
+    BRAND_NAME: ${self:custom.appConfig.BRAND}
     ENABLE_IMAGE_ENRICHMENT: ${env:ENABLE_IMAGE_ENRICHMENT, 'false'}
     ENABLE_STREAM_ENRICHMENT: ${env:ENABLE_STREAM_ENRICHMENT, 'true'}
     # Vision LLM API Configuration (Optional - services gracefully fallback to mocks)

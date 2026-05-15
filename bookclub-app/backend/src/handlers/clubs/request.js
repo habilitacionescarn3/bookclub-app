@@ -23,7 +23,7 @@ exports.handler = async (event) => {
       const ownerId = club.createdBy;
       if (ownerId && ownerId !== userId) {
         const requester = await User.getById(userId).catch(() => null);
-        const baseUrl = process.env.FRONTEND_BASE_URL || process.env.APP_BASE_URL || process.env.WEBSITE_URL || 'https://townwink.com';
+        const baseUrl = process.env.SITE_BASE_URL;
         const reviewUrl = `${baseUrl}/clubs/${clubId}/requests`;
         await sendEmailIfEnabled(ownerId, 'new_member_in_your_club', 'club_join_request', {
           requesterName: requester?.name || 'A user',

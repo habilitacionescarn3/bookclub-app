@@ -41,7 +41,7 @@ exports.handler = async (event) => {
     try {
       const sender = await User.getById(userId);
       const fromName = sender?.name || 'A user';
-      const baseUrl = process.env.APP_BASE_URL || 'https://townwink.com';
+      const baseUrl = process.env.SITE_BASE_URL;
       const conversationUrl = `${baseUrl.replace(/\/$/, '')}/messages/${conversationId}`;
       await sendEmailIfEnabled(
         toUserId,
