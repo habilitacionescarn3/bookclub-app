@@ -31,7 +31,8 @@ cd ../..
 echo "📦 Deploying Backend..."
 cd backend
 npm install
-serverless deploy --stage $ENV --region $REGION
+export DEPLOY_TARGET=$ENV
+serverless deploy --stage prod --region $REGION
 cd ..
 
 # 3. Frontend (React)
@@ -39,8 +40,9 @@ echo "🎨 Building Frontend for $BRAND ($DOMAIN)..."
 
 # Fetch Cognito outputs from backend
 cd backend
-USER_POOL_ID=$(serverless info --stage $ENV --verbose | grep "UserPoolId:" | awk '{print $2}')
-USER_POOL_CLIENT_ID=$(serverless info --stage $ENV --verbose | grep "UserPoolClientId:" | awk '{print $2}')
+export DEPLOY_TARGET=$ENV
+USER_POOL_ID=$(serverless info --stage prod --verbose | grep "UserPoolId:" | awk '{print $2}')
+USER_POOL_CLIENT_ID=$(serverless info --stage prod --verbose | grep "UserPoolClientId:" | awk '{print $2}')
 DOMAIN_PREFIX=$(cat config/app.$ENV.json | grep 'userPoolDomainPrefix' | sed -E 's/.*:\s*"([^"]+)".*/\1/' | tr -d ',')
 COGNITO_DOMAIN="${DOMAIN_PREFIX}.auth.${REGION}.amazoncognito.com"
 REDIRECT_SIGNIN=$(cat config/app.$ENV.json | grep 'redirectSignIn' | sed -E 's/.*:\s*"([^"]+)".*/\1/' | tr -d ',')

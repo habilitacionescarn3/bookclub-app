@@ -1,5 +1,5 @@
 aws_region           = "ap-south-1"
-stage                = "india"
+stage                = "prod"
 api_fqdn             = "api.townwink.com"
 hosted_zone_name     = "townwink.com"
 frontend_bucket_name = "townwink-india-frontend"

@@ -140,7 +140,7 @@ provider:
           Resource: "*"
 
 custom:
-  appConfig: ${file(./config/app.${self:provider.stage}.json)}
+  appConfig: ${file(./config/app.${env:DEPLOY_TARGET, 'prod'}.json)}
   serverless-offline:
     httpPort: 4000
     resourceRoutes: true
