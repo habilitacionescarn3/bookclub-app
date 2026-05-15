@@ -1,9 +1,8 @@
 const BookClub = require('../../models/bookclub');
-const User = require('../../models/user');
 const { success, error } = require('../../lib/response');
+const { withAuth } = require('../../lib/middleware');
 
-// --- Handler (top) ---
-exports.handler = async (event) => {
+const handler = async (event) => {
   try {
     const body = parseBody(event);
     if (!body) return error('Request body is required', 400);
@@ -11,8 +10,7 @@ exports.handler = async (event) => {
     const validationErr = validateBody(body);
     if (validationErr) return validationErr;
 
-    const userId = await getUserIdFromEventOrToken(event);
-    if (!userId) return error('Invalid or expired token', 401);
+    const { userId } = event;
 
     const clubData = buildClubData(body);
     const club = await BookClub.create(clubData, userId);
@@ -23,7 +21,6 @@ exports.handler = async (event) => {
   }
 };
 
-// --- Helpers ---
 const parseBody = (event) => {
   if (!event?.body) return null;
   try { return JSON.parse(event.body); } catch { return null; }
@@ -46,25 +43,6 @@ const validateBody = ({ name, description, location, memberLimit, slug }) => {
   return null;
 };
 
-const getUserIdFromEventOrToken = async (event) => {
-  const claims = event?.requestContext?.authorizer?.claims;
-  let userId = claims?.sub;
-  if (userId) return userId;
-  
-  const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
-  const accessTokenHeader = (event.headers && (event.headers['X-Access-Token'] || event.headers['x-access-token'])) || '';
-  
-  const token = accessTokenHeader || (authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader || null);
-  
-  if (!token) return null;
-  try {
-    const currentUser = await User.getCurrentUser(token);
-    return currentUser?.userId || null;
-  } catch {
-    return null;
-  }
-};
-
 const buildClubData = ({ name, description, location, isPrivate, memberLimit, slug }) => ({
   name: name.trim(),
   slug: slug ? slug.trim() : undefined,
@@ -73,3 +51,5 @@ const buildClubData = ({ name, description, location, isPrivate, memberLimit, sl
   isPrivate: !!isPrivate,
   memberLimit: memberLimit || null,
 });
+
+module.exports.handler = withAuth(handler);

@@ -1,26 +1,16 @@
 const BookClub = require('../../models/bookclub');
-const User = require('../../models/user');
 const { success, error } = require('../../lib/response');
+const { withClubAdmin } = require('../../lib/middleware');
 
-// --- Handler (moved to top) ---
-exports.handler = async (event) => {
+const handler = async (event) => {
   try {
-    const clubId = getClubIdFromPath(event);
-    if (!clubId) return error('clubId is required in path', 400);
-
+    const clubId = event.pathParameters.clubId;
     const payload = parseBody(event);
     if (!payload) return error('Request body is required', 400);
 
     const updates = pickAllowedUpdates(payload, ['name', 'description', 'location', 'isPrivate', 'memberLimit', 'slug']);
     const validationError = validateUpdates(updates);
     if (validationError) return validationError;
-
-    const userId = await getUserIdFromEventOrToken(event);
-    if (!userId) return error('Invalid or expired token', 401);
-
-    const club = await BookClub.getById(clubId);
-    if (!club) return error('Club not found', 404);
-    if (!isCreator(club, userId)) return error('Only the club creator can update this club', 403);
 
     const updated = await BookClub.update(clubId, updates);
     return success(updated);
@@ -29,9 +19,6 @@ exports.handler = async (event) => {
     return error(err.message || 'Failed to update club', err.statusCode || 500);
   }
 };
-
-// --- Helpers ---
-const getClubIdFromPath = (event) => (event.pathParameters && event.pathParameters.clubId) || null;
 
 const parseBody = (event) => {
   if (!event.body) return null;
@@ -105,23 +92,4 @@ const validateUpdates = (updates) => {
   return null;
 };
 
-const getUserIdFromEventOrToken = async (event) => {
-  const claims = event?.requestContext?.authorizer?.claims;
-  let userId = claims?.sub;
-  if (userId) return userId;
-  
-  const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
-  const accessTokenHeader = (event.headers && (event.headers['X-Access-Token'] || event.headers['x-access-token'])) || '';
-  
-  const token = accessTokenHeader || (authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader || null);
-  
-  if (!token) return null;
-  try {
-    const currentUser = await User.getCurrentUser(token);
-    return currentUser?.userId || null;
-  } catch {
-    return null;
-  }
-};
-
-const isCreator = (club, userId) => club?.createdBy === userId;
+module.exports.handler = withClubAdmin(handler);

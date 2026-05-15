@@ -1,12 +1,13 @@
 const response = require('../../lib/response');
 const Book = require('../../models/book');
-const { getAuthenticatedUserId } = require('../../lib/get-user-id');
 const bookMetadataService = require('../../lib/book-metadata');
 const textractService = require('../../lib/textract-service');
 const imageMetadataService = require('../../lib/image-metadata-service');
 const { DynamoDB } = require('../../lib/aws-config');
 const { getTableName } = require('../../lib/table-names');
 const BookClub = require('../../models/bookclub');
+
+const { withAuth } = require('../../lib/middleware');
 
 /**
  * Helper function to assign ISBN based on extracted metadata
@@ -36,11 +37,10 @@ function assignIsbnFromMetadata(existingIsbn10, existingIsbn13, extractedIsbn) {
   return result;
 }
 
-// --- Handler (moved to top for readability) ---
-module.exports.handler = async (event) => {
+// --- Handler ---
+const handler = async (event) => {
   try {
-    const userId = await getAuthenticatedUserId(event);
-    if (!userId) return response.unauthorized('Missing or invalid authentication');
+    const { userId } = event;
 
     const data = parseBody(event);
     console.log('[BookCreate] Request received:', JSON.stringify(data, null, 2));
@@ -267,4 +267,5 @@ const validateFinalBookData = (bookData, isExtracting) => {
   });
 };
 
-// end handlers
+
+module.exports.handler = withAuth(handler);

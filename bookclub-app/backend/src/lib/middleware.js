@@ -76,9 +76,34 @@ const withClubAdmin = (handler) => withUser(async (event, context) => {
   return handler(event, context);
 });
 
+/**
+ * Ensures the user is the club creator or superadmin.
+ */
+const withClubOwner = (handler) => withUser(async (event, context) => {
+  const { userId, currentUser } = event;
+  const clubId = event.pathParameters?.clubId;
+  
+  if (!clubId) return error('Club ID is required', 400);
+  
+  const isSuperAdmin = currentUser.role === 'superadmin';
+  const club = await BookClub.getById(clubId);
+  
+  if (!club) return error('Club not found', 404);
+  
+  const isCreator = club.createdBy === userId;
+  
+  if (!isSuperAdmin && !isCreator) {
+    return error('Forbidden: Club owner access required', 403);
+  }
+  
+  event.club = club;
+  return handler(event, context);
+});
+
 module.exports = {
   withAuth,
   withUser,
   withAdmin,
   withClubAdmin,
+  withClubOwner,
 };

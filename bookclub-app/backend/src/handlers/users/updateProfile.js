@@ -1,29 +1,10 @@
 const User = require('../../models/user');
 const response = require('../../lib/response');
-const LocalStorage = require('../../lib/local-storage');
+const { withAuth } = require('../../lib/middleware');
 
-module.exports.handler = async (event) => {
+const handler = async (event) => {
   try {
-    let userId;
-    let claims = null;
-    // Prefer Cognito claims when available
-    if (event.requestContext && event.requestContext.authorizer && event.requestContext.authorizer.claims && event.requestContext.authorizer.claims.sub) {
-      claims = event.requestContext.authorizer.claims;
-      userId = claims.sub;
-    } else {
-      // Fallback for local/offline: parse Bearer token and verify via LocalStorage
-      const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : null;
-      if (!token) {
-        return response.unauthorized('Missing Authorization header');
-      }
-      const user = await LocalStorage.verifyToken(token);
-      if (!user) {
-        return response.unauthorized('Invalid token');
-      }
-      userId = user.userId;
-    }
-
+    const { userId } = event;
     const data = JSON.parse(event.body);
 
     // Validate input - only allow certain fields to be updated
@@ -76,3 +57,5 @@ module.exports.handler = async (event) => {
     return response.error(error);
   }
 };
+
+module.exports.handler = withAuth(handler);
