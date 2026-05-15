@@ -2,24 +2,11 @@ const { success, error } = require('../../lib/response');
 const User = require('../../models/user');
 const DM = require('../../models/dm');
 const { sendEmailIfEnabled } = require('../../lib/notification-service');
+const { withAuth } = require('../../lib/middleware');
 
-exports.handler = async (event) => {
+const handler = async (event) => {
   try {
-    const claims = event?.requestContext?.authorizer?.claims;
-    let userId = claims?.sub;
-    if (!userId) {
-      const authHeader = (event.headers && (event.headers.Authorization || event.headers.authorization)) || '';
-      const token = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length) : authHeader || null;
-      if (!token) return error('Authorization token is required', 401);
-      try {
-        const currentUser = await User.getCurrentUser(token);
-        if (!currentUser) return error('User not found', 401);
-        userId = currentUser.userId;
-      } catch {
-        return error('Invalid or expired token', 401);
-      }
-    }
-
+    const { userId } = event;
     const { conversationId } = event.pathParameters || {};
     if (!conversationId) return error('conversationId is required', 400);
 
@@ -50,14 +37,14 @@ exports.handler = async (event) => {
         { fromName, snippet: trimmed.slice(0, 140), conversationUrl }
       );
     } catch (notifyErr) {
-      // eslint-disable-next-line no-console
       console.warn('DM email notification skipped/failed:', notifyErr?.message || notifyErr);
     }
 
     return success(msg);
   } catch (e) {
-    // eslint-disable-next-line no-console
     console.error('Error sending message:', e);
     return error(e.message || 'Failed to send message', 500);
   }
 };
+
+module.exports.handler = withAuth(handler);
