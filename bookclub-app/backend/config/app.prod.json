@@ -1,9 +1,0 @@
-{
-  "region": "us-east-1",
-  "apiCustomDomain": "api.townwink.com",
-  "userPoolDomainPrefix": "townwink",
-  "oauth": {
-    "redirectSignIn": "https://townwink.com/auth/callback",
-    "redirectSignOut": "https://townwink.com/"
-  }
-}
