@@ -72,3 +72,9 @@ variable "manage_dns" {
   type        = bool
   default     = false
 }
+
+variable "book_covers_bucket_name" {
+  description = "Globally unique name for the book covers S3 bucket"
+  type        = string
+  default     = ""
+}

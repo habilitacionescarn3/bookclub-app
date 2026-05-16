@@ -5,3 +5,4 @@ hosted_zone_name     = "booklub.shop"
 frontend_bucket_name = "booklub-au-frontend"
 manage_dns           = true
 enable_api_mapping   = false
+book_covers_bucket_name = "bookclub-app-prod-book-covers"
