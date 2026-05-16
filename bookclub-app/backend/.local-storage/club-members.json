@@ -1,9 +1,0 @@
-{
-  "6dbc67af-648a-45da-83d2-4e0044210915:test-user-123": {
-    "clubId": "6dbc67af-648a-45da-83d2-4e0044210915",
-    "userId": "test-user-123",
-    "role": "admin",
-    "joinedAt": "2026-05-16T20:48:10.859Z",
-    "status": "active"
-  }
-}
