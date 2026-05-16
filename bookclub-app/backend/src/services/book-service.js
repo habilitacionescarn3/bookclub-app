@@ -103,6 +103,7 @@ class BookService {
       s3Bucket: data.s3Bucket,
       s3Key: data.s3Key,
       clubId: data.clubId || null,
+      metadataSource: data.metadataSource,
     };
   }
 
@@ -191,7 +192,7 @@ class BookService {
   }
 
   static validateFinalData(bookData, isExtracting) {
-    if (isExtracting && process.env.NODE_ENV !== 'test') return;
+    if (isExtracting || bookData.metadataSource === 'image-upload-pending') return;
     
     const isBook = !bookData.category || bookData.category === 'book';
     const missing = [];

@@ -4,7 +4,7 @@ const BookService = require('../../services/book-service');
 const { withOptionalAuth } = require('../../lib/middleware');
 
 const ListQuerySchema = z.object({
-  limit: z.preprocess((val) => parseInt(val, 10), z.number().int().min(1).max(100).default(10)),
+  limit: z.preprocess((val) => (val === undefined || val === null) ? undefined : parseInt(val, 10), z.number().int().min(1).max(100).default(10)),
   nextToken: z.string().optional(),
   search: z.string().optional(),
   ageGroupFine: z.string().optional(),

@@ -1,15 +1,15 @@
 {
-  "65d6441b-a701-41cc-8b4a-681a62376b5f": {
-    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f",
+  "6dbc67af-648a-45da-83d2-4e0044210915": {
+    "clubId": "6dbc67af-648a-45da-83d2-4e0044210915",
     "name": "Test Book Club",
     "slug": "test-book-club",
     "description": "A test club",
     "createdBy": "test-user-123",
-    "inviteCode": "DC7AB559",
+    "inviteCode": "EA659DB0",
     "isPrivate": false,
     "memberLimit": null,
-    "memberCount": 3,
-    "createdAt": "2026-05-15T15:08:34.326Z",
-    "updatedAt": "2026-05-15T15:08:34.326Z"
+    "memberCount": 1,
+    "createdAt": "2026-05-16T20:48:10.859Z",
+    "updatedAt": "2026-05-16T20:48:10.859Z"
   }
 }

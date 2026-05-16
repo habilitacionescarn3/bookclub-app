@@ -9,6 +9,7 @@ const ConfigSchema = z.object({
   EVENT_BUS_SOURCE: z.string().optional(),
   LOG_LEVEL: z.string().default('info'),
   IS_OFFLINE: z.preprocess((val) => val === 'true', z.boolean()).default(false),
+  BEDROCK_ANALYZE_QUEUE_URL: z.string().optional(),
 });
 
 // Environment variables are accessed through process.env
@@ -21,6 +22,7 @@ const env = {
   EVENT_BUS_SOURCE: process.env.EVENT_BUS_SOURCE,
   LOG_LEVEL: process.env.LOG_LEVEL,
   IS_OFFLINE: process.env.IS_OFFLINE,
+  BEDROCK_ANALYZE_QUEUE_URL: process.env.BEDROCK_ANALYZE_QUEUE_URL,
 };
 
 let config;
