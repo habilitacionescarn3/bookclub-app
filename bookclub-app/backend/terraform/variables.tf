@@ -78,3 +78,9 @@ variable "book_covers_bucket_name" {
   type        = string
   default     = ""
 }
+
+variable "create_certificate" {
+  description = "Whether to create a new ACM certificate or use an existing one via data lookup"
+  type        = bool
+  default     = true
+}
