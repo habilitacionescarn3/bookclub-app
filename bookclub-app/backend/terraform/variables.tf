@@ -41,6 +41,7 @@ variable "api_fqdn" {
 variable "hosted_zone_id" {
   description = "Route53 hosted zone ID for the apex domain (e.g., Z123ABCXYZ)"
   type        = string
+  default     = ""
 }
 
 variable "hosted_zone_name" {
