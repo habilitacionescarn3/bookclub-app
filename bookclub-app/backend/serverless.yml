@@ -15,7 +15,7 @@ provider:
     STAGE: ${self:provider.stage}
     COGNITO_USER_POOL_ID: !Ref UserPool
     COGNITO_CLIENT_ID: !Ref UserPoolClient
-    BOOK_COVERS_BUCKET: ${self:service}-${self:provider.stage}-book-covers
+    BOOK_COVERS_BUCKET: ${ssm:/${self:service}/${self:provider.stage}/book_covers_bucket_name}
     NOTIFY_FROM_EMAIL: ${self:custom.appConfig.NOTIFY_FROM_EMAIL}
     ADMIN_NOTIFY_EMAIL: ${env:ADMIN_NOTIFY_EMAIL, 'madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com'}
     CONTACT_RECIPIENTS: ${env:CONTACT_RECIPIENTS, 'madhukar.goud@gmail.com,madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com'}
@@ -86,7 +86,7 @@ provider:
             - s3:CompleteMultipartUpload
             - s3:AbortMultipartUpload
           Resource: 
-            - "arn:aws:s3:::${self:service}-${self:provider.stage}-book-covers/*"
+            - "arn:aws:s3:::${ssm:/${self:service}/${self:provider.stage}/book_covers_bucket_name}/*"
         - Effect: Allow
           Action:
             - ses:SendEmail
@@ -780,13 +780,13 @@ functions:
     timeout: 900
     events:
       - s3:
-          bucket: ${self:service}-${self:provider.stage}-book-covers
+          bucket: ${ssm:/${self:service}/${self:provider.stage}/book_covers_bucket_name}
           event: s3:ObjectCreated:*
           rules:
             - prefix: book-covers/
           existing: true
       - s3:
-          bucket: ${self:service}-${self:provider.stage}-book-covers
+          bucket: ${ssm:/${self:service}/${self:provider.stage}/book_covers_bucket_name}
           event: s3:ObjectCreated:*
           rules:
             - prefix: library-images/
@@ -2131,7 +2131,7 @@ resources:
       Properties:
         ServiceToken: !GetAtt S3BucketManagerLambdaFunction.Arn
         CustomResourceVersion: "6"
-        BucketName: ${self:service}-${self:provider.stage}-book-covers
+        BucketName: ${ssm:/${self:service}/${self:provider.stage}/book_covers_bucket_name}
         PublicAccessBlockConfiguration:
           BlockPublicAcls: false
           BlockPublicPolicy: false
@@ -2178,4 +2178,4 @@ resources:
     ApiUrl:
       Value: !Join ["", ["https://", !Ref ApiGatewayRestApi, ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}"]]
     BookCoversBucketName:
-      Value: ${self:service}-${self:provider.stage}-book-covers
+      Value: ${ssm:/${self:service}/${self:provider.stage}/book_covers_bucket_name}

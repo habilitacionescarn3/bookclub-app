@@ -20,6 +20,7 @@ data "aws_cloudformation_export" "user_pool_client_id" {
 
 # ACM certificate for the API custom domain (must be in us-east-1 for EDGE)
 resource "aws_acm_certificate" "api_cert" {
+  provider          = aws.us_east_1
   count             = var.manage_dns ? 1 : 0
   domain_name       = var.api_fqdn
   validation_method = "DNS"
@@ -53,6 +54,7 @@ resource "aws_route53_record" "api_cert_validation" {
 
 # Validate the certificate
 resource "aws_acm_certificate_validation" "api_cert_validation" {
+  provider                = aws.us_east_1
   count                   = var.manage_dns ? 1 : 0
   certificate_arn         = aws_acm_certificate.api_cert[0].arn
   validation_record_fqdns = [for r in aws_route53_record.api_cert_validation : r.fqdn]
