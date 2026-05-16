@@ -16,7 +16,7 @@ const UpdateProfileSchema = z.object({
       return false;
     }
   }, { message: 'Invalid timezone' }).optional(),
-}).strict();
+});
 
 /**
  * Handler for updating user profile.

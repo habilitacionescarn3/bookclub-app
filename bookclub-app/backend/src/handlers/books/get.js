@@ -1,10 +1,11 @@
 const response = require('../../lib/response');
 const BookService = require('../../services/book-service');
+const { withErrorHandler } = require('../../lib/middleware');
 
 /**
  * Handler for retrieving a single book or library item by ID.
  */
-module.exports.handler = async (event) => {
+const handler = async (event) => {
   const { bookId } = event.pathParameters || {};
   
   if (!bookId) {
@@ -15,3 +16,5 @@ module.exports.handler = async (event) => {
   
   return response.success(book);
 };
+
+module.exports.handler = withErrorHandler(handler);

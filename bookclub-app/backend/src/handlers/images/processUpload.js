@@ -35,7 +35,6 @@ module.exports.handler = async (event) => {
       }
 
       // 1. Create or retrieve draft book/item
-      // BookService.create handles idempotency via getMappedBookId
       const item = await BookService.create({
         title: isLibrary ? 'Processing…' : deriveTitleFromKey(key),
         description: isLibrary ? '' : 'Book uploaded via image - metadata processing in progress',

@@ -191,7 +191,7 @@ class BookService {
   }
 
   static validateFinalData(bookData, isExtracting) {
-    if (isExtracting && process.env.NODE_ENV !== 'test') return;
+    if (isExtracting || bookData.metadataSource === 'image-upload-pending') return;
     
     const isBook = !bookData.category || bookData.category === 'book';
     const missing = [];

@@ -14,9 +14,20 @@ const withErrorHandler = (handler) => async (event, context) => {
     return result;
   } catch (err) {
     const message = err.message || 'Internal Server Error';
-    
+    // Handle Zod validation errors (robust check for ZodError)
+    const zodIssues = err.issues || (err.zodError ? err.zodError.errors : null);
+    if (Array.isArray(zodIssues) && zodIssues.length > 0) {
+      const errors = {};
+      zodIssues.forEach((e) => {
+        const path = e.path && e.path.length > 0 ? e.path.join('.') : 'message';
+        errors[path] = e.message;
+      });
+      return response.validationError(errors);
+    }
+
     // Parse service-level error prefixes
     if (message.startsWith('VALIDATION_ERROR:')) {
+      console.log('[Middleware Debug] Entering VALIDATION_ERROR block');
       const details = message.replace('VALIDATION_ERROR:', '');
       return response.validationError({ message: details });
     }
@@ -30,6 +41,7 @@ const withErrorHandler = (handler) => async (event, context) => {
       return response.unauthorized(message.replace('UNAUTHORIZED:', ''));
     }
 
+    console.error('Unhandled Exception in Middleware:', err);
     logger.error({ err, path: event.path, userId: event.userId }, 'Unhandled Exception');
     return response.error(message, 500);
   }
