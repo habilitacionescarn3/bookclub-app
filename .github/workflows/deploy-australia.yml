@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - release
   workflow_dispatch:
 
 permissions:
@@ -28,10 +27,11 @@ jobs:
           cache-dependency-path: 'bookclub-app/backend/package-lock.json'
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          role-to-assume: ${{ vars.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
+          role-session-name: github-actions-deploy-australia
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2

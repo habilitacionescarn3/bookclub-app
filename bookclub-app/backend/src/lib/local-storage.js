@@ -6,7 +6,8 @@ const path = require('path');
 const OFFLINE = process.env.IS_OFFLINE === 'true' || process.env.SERVERLESS_OFFLINE === 'true' || process.env.NODE_ENV === 'test';
 
 // Use a simple file-based storage for serverless offline
-const STORAGE_DIR = path.join(__dirname, '../../.local-storage');
+const STORAGE_DIR_NAME = process.env.NODE_ENV === 'test' ? '.local-storage-test' : '.local-storage';
+const STORAGE_DIR = path.join(__dirname, '../../' + STORAGE_DIR_NAME);
 const USERS_FILE = path.join(STORAGE_DIR, 'users.json');
 const BOOKS_FILE = path.join(STORAGE_DIR, 'books.json');
 const CLUBS_FILE = path.join(STORAGE_DIR, 'clubs.json');
