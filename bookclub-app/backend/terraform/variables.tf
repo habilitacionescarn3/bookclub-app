@@ -34,7 +34,7 @@ variable "stage" {
 }
 
 variable "api_fqdn" {
-  description = "API custom domain FQDN, e.g., api.booklub.shop"
+  description = "API custom domain FQDN, e.g., api.townwink.com"
   type        = string
 }
 
@@ -44,7 +44,7 @@ variable "hosted_zone_id" {
 }
 
 variable "hosted_zone_name" {
-  description = "Optional Route53 hosted zone name (e.g., booklub.shop). Used if hosted_zone_id is not provided."
+  description = "Optional Route53 hosted zone name (e.g., townwink.com). Used if hosted_zone_id is not provided."
   type        = string
   default     = ""
 }

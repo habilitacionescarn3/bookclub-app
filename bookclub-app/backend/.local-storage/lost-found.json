@@ -1,8 +1,8 @@
 {
   "lf-001": {
     "lostFoundId": "lf-001",
-    "clubId": "club-fiction-001",
-    "userId": "local-user",
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f",
+    "userId": "local-user-2",
     "title": "Blue Water Bottle",
     "description": "Found near the reading corner after Tuesday's session. Has a small cat sticker on the lid.",
     "itemType": "other",
@@ -16,8 +16,8 @@
   },
   "lf-002": {
     "lostFoundId": "lf-002",
-    "clubId": "club-fiction-001",
-    "userId": "local-user",
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f",
+    "userId": "local-user-2",
     "title": "Knitting Needles (pair, size 4mm)",
     "description": "Left behind after the craft-and-read evening. Pink handles.",
     "itemType": "tool",

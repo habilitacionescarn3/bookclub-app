@@ -1,9 +1,30 @@
 {
-  "598b5685-e31b-46f8-bd44-96c037cce53d:test-user-123": {
-    "clubId": "598b5685-e31b-46f8-bd44-96c037cce53d",
+  "65d6441b-a701-41cc-8b4a-681a62376b5f:test-user-123": {
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f",
     "userId": "test-user-123",
     "role": "admin",
-    "joinedAt": "2026-05-08T01:46:54.546Z",
+    "joinedAt": "2026-05-15T15:08:34.326Z",
+    "status": "active"
+  },
+  "65d6441b-a701-41cc-8b4a-681a62376b5f:local-user": {
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f",
+    "userId": "local-user",
+    "role": "admin",
+    "joinedAt": "2026-05-15T15:13:00.000Z",
+    "status": "active"
+  },
+  "65d6441b-a701-41cc-8b4a-681a62376b5f:local-user-2": {
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f",
+    "userId": "local-user-2",
+    "role": "member",
+    "joinedAt": "2026-05-15T15:15:00.000Z",
+    "status": "active"
+  },
+  "65d6441b-a701-41cc-8b4a-681a62376b5f:user-3": {
+    "clubId": "65d6441b-a701-41cc-8b4a-681a62376b5f",
+    "userId": "user-3",
+    "role": "member",
+    "joinedAt": "2026-05-15T15:20:00.000Z",
     "status": "active"
   }
 }

@@ -16,11 +16,12 @@ provider:
     COGNITO_USER_POOL_ID: !Ref UserPool
     COGNITO_CLIENT_ID: !Ref UserPoolClient
     BOOK_COVERS_BUCKET: ${self:service}-${self:provider.stage}-book-covers
-    NOTIFY_FROM_EMAIL: ${env:NOTIFY_FROM_EMAIL, 'notify@booklub.shop'}
+    NOTIFY_FROM_EMAIL: ${self:custom.appConfig.NOTIFY_FROM_EMAIL}
     ADMIN_NOTIFY_EMAIL: ${env:ADMIN_NOTIFY_EMAIL, 'madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com'}
     CONTACT_RECIPIENTS: ${env:CONTACT_RECIPIENTS, 'madhukar.goud@gmail.com,madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com'}
     EVENT_BUS_NAME: ${env:EVENT_BUS_NAME, 'default'}
     EVENT_BUS_SOURCE: ${env:EVENT_BUS_SOURCE, 'bookclub.app'}
+    BRAND_NAME: ${self:custom.appConfig.BRAND}
     ENABLE_IMAGE_ENRICHMENT: ${env:ENABLE_IMAGE_ENRICHMENT, 'false'}
     ENABLE_STREAM_ENRICHMENT: ${env:ENABLE_STREAM_ENRICHMENT, 'true'}
     # Vision LLM API Configuration (Optional - services gracefully fallback to mocks)
@@ -36,7 +37,7 @@ provider:
     # SQS queue for Bedrock analyzer worker
     BEDROCK_ANALYZE_QUEUE_URL: !Ref BedrockAnalyzeQueue
     # Base URL for generating absolute links in sitemap
-    SITE_BASE_URL: ${env:SITE_BASE_URL, 'https://booklub.shop'}
+    SITE_BASE_URL: ${self:custom.appConfig.oauth.redirectSignOut}
     # Bedrock throttle tuning
     BEDROCK_MAX_ATTEMPTS: ${env:BEDROCK_MAX_ATTEMPTS, '8'}
     BEDROCK_BACKOFF_BASE_MS: ${env:BEDROCK_BACKOFF_BASE_MS, '2000'} # start at 2s
@@ -74,9 +75,6 @@ provider:
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-bookclub-members-${self:provider.stage}/index/*
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-dm-conversations-${self:provider.stage}/index/*
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-dm-messages-${self:provider.stage}/index/*
-            - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-toy-listings-${self:provider.stage}
-            - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-toy-listings-${self:provider.stage}/index/*
-            - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-lost-found-${self:provider.stage}
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-lost-found-${self:provider.stage}/index/*
         - Effect: Allow
           Action:
@@ -140,7 +138,7 @@ provider:
           Resource: "*"
 
 custom:
-  appConfig: ${file(./config/app.${self:provider.stage}.json)}
+  appConfig: ${file(./config/app.${env:DEPLOY_TARGET, 'prod'}.json)}
   serverless-offline:
     httpPort: 4000
     resourceRoutes: true
@@ -1420,103 +1418,6 @@ functions:
               - X-Amz-Security-Token
             allowCredentials: true
 
-  # Swap Toys marketplace functions
-  listToyListings:
-    handler: src/handlers/swaptoys/list.handler
-    events:
-      - http:
-          method: GET
-          path: /swap-toys
-          cors:
-            origin: "*"
-            headers:
-              - Content-Type
-              - Authorization
-              - X-Access-Token
-              - X-Amz-Date
-              - X-Api-Key
-              - X-Amz-Security-Token
-            allowCredentials: true
-
-  createToyListing:
-    handler: src/handlers/swaptoys/create.handler
-    events:
-      - http:
-          method: POST
-          path: /swap-toys
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - Authorization
-              - X-Access-Token
-              - X-Amz-Date
-              - X-Api-Key
-              - X-Amz-Security-Token
-            allowCredentials: true
-          authorizer:
-            type: COGNITO_USER_POOLS
-            authorizerId:
-              Ref: ApiGatewayAuthorizer
-
-  getToyListing:
-    handler: src/handlers/swaptoys/get.handler
-    events:
-      - http:
-          method: GET
-          path: /swap-toys/{listingId}
-          cors:
-            origin: "*"
-            headers:
-              - Content-Type
-              - Authorization
-              - X-Access-Token
-              - X-Amz-Date
-              - X-Api-Key
-              - X-Amz-Security-Token
-            allowCredentials: true
-
-  updateToyListing:
-    handler: src/handlers/swaptoys/update.handler
-    events:
-      - http:
-          method: PUT
-          path: /swap-toys/{listingId}
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - Authorization
-              - X-Access-Token
-              - X-Amz-Date
-              - X-Api-Key
-              - X-Amz-Security-Token
-            allowCredentials: true
-          authorizer:
-            type: COGNITO_USER_POOLS
-            authorizerId:
-              Ref: ApiGatewayAuthorizer
-
-  deleteToyListing:
-    handler: src/handlers/swaptoys/delete.handler
-    events:
-      - http:
-          method: DELETE
-          path: /swap-toys/{listingId}
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - Authorization
-              - X-Access-Token
-              - X-Amz-Date
-              - X-Api-Key
-              - X-Amz-Security-Token
-            allowCredentials: true
-          authorizer:
-            type: COGNITO_USER_POOLS
-            authorizerId:
-              Ref: ApiGatewayAuthorizer
 
   # Contact form (public, no auth)
   contactSubmit:
@@ -1834,10 +1735,8 @@ resources:
           RefreshToken: days
         CallbackURLs:
           - ${self:custom.appConfig.oauth.redirectSignIn}
-          - https://nearborrow.com.au/auth/callback
         LogoutURLs:
           - ${self:custom.appConfig.oauth.redirectSignOut}
-          - https://nearborrow.com.au
 
     GoogleIdentityProvider:
       Type: AWS::CloudFormation::CustomResource
@@ -2089,38 +1988,6 @@ resources:
           ReadCapacityUnits: 5
           WriteCapacityUnits: 5
 
-    ToyListingsTable:
-      Type: AWS::CloudFormation::CustomResource
-      DeletionPolicy: Retain
-      UpdateReplacePolicy: Retain
-      Properties:
-        ServiceToken: !GetAtt DynamoTableManagerLambdaFunction.Arn
-        TableName: ${self:service}-toy-listings-${self:provider.stage}
-        AttributeDefinitions:
-          - AttributeName: listingId
-            AttributeType: S
-          - AttributeName: userId
-            AttributeType: S
-          - AttributeName: createdAt
-            AttributeType: S
-        KeySchema:
-          - AttributeName: listingId
-            KeyType: HASH
-        GlobalSecondaryIndexes:
-          - IndexName: UserIdIndex
-            KeySchema:
-              - AttributeName: userId
-                KeyType: HASH
-              - AttributeName: createdAt
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-            ProvisionedThroughput:
-              ReadCapacityUnits: 5
-              WriteCapacityUnits: 5
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
 
     UsersTable:
       Type: AWS::CloudFormation::CustomResource
