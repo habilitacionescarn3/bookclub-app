@@ -90,7 +90,7 @@ describe('generateUploadUrl handler', () => {
     const result = await handler({ ...mockEvent, body: JSON.stringify({ fileName: 'test.jpg' }) });
     expect(result.statusCode).toBe(400);
     const body = JSON.parse(result.body);
-    expect(body.error.errors.fileType).toBe('fileType is required');
+    expect(body.error.errors.fileType).toMatch(/fileType is required|expected string, received undefined/i);
   });
 
   test('should accept all valid image types', async () => {

@@ -1,7 +1,17 @@
 jest.mock('../../src/lib/aws-config');
 jest.mock('../../src/lib/textract-service');
 jest.mock('../../src/lib/event-bus');
-jest.mock('../../src/models/book');
+jest.mock('../../src/models/book', () => ({
+  create: jest.fn(),
+  update: jest.fn(),
+  getById: jest.fn(),
+  getMemberRole: jest.fn(),
+  isMember: jest.fn(),
+  listByLentToUser: jest.fn(),
+  listByUser: jest.fn(),
+  listAll: jest.fn(),
+  delete: jest.fn(),
+}));
 
 const { handler: processUploadHandler } = require('../../src/handlers/images/processUpload');
 const { handler: createBookHandler } = require('../../src/handlers/books/create');

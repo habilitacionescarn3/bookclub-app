@@ -25,15 +25,24 @@ jest.mock('aws-sdk', () => {
     },
   };
 });
-jest.mock('../../../../src/lib/logger');
+jest.mock('../../../../src/lib/logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn(),
+  warn: jest.fn(),
+}));
 
 const { handler } = require('../../../../src/handlers/images/processUpload');
 const BookService = require('../../../../src/services/book-service');
 const AWS = require('aws-sdk');
-const logger = require('../../../../src/lib/logger');
+const config = require('../../../../src/lib/config');
 
 describe('processUpload handler', () => {
   let sqs;
+
+  beforeAll(() => {
+    config.BEDROCK_ANALYZE_QUEUE_URL = 'https://sqs.us-east-1.amazonaws.com/123456789012/bedrock-analyze-queue';
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();

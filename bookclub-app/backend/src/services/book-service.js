@@ -103,6 +103,7 @@ class BookService {
       s3Bucket: data.s3Bucket,
       s3Key: data.s3Key,
       clubId: data.clubId || null,
+      metadataSource: data.metadataSource,
     };
   }
 
