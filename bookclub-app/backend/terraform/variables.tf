@@ -84,3 +84,9 @@ variable "create_certificate" {
   type        = bool
   default     = true
 }
+
+variable "existing_certificate_arn" {
+  description = "Explicit ARN of an existing ACM certificate in us-east-1 to use (bypasses creation and data lookup if provided)"
+  type        = string
+  default     = ""
+}
