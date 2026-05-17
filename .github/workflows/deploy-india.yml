@@ -78,7 +78,7 @@ jobs:
           REACT_APP_COGNITO_REGION=ap-south-1
           REACT_APP_COGNITO_USER_POOL_ID=$USER_POOL_ID
           REACT_APP_COGNITO_CLIENT_ID=$USER_POOL_CLIENT_ID
-          REACT_APP_COGNITO_DOMAIN=townwink-india-prod.auth.ap-south-1.amazoncognito.com
+          REACT_APP_COGNITO_DOMAIN=townwink-in-prod.auth.ap-south-1.amazoncognito.com
           REACT_APP_OAUTH_REDIRECT_SIGNIN=https://townwink.com/auth/callback
           REACT_APP_OAUTH_REDIRECT_SIGNOUT=https://townwink.com/
           REACT_APP_DOMAIN=townwink.com
