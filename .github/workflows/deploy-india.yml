@@ -50,6 +50,17 @@ jobs:
             -backend-config="key=terraform.tfstate"
           terraform apply -var-file="india.tfvars" -auto-approve
 
+      - name: 🧹 Cleanup Orphaned Cognito Domain
+        env:
+          AWS_REGION: ap-south-1
+        run: |
+          USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 60 | jq -r '.UserPools[] | select(.Name=="bookclub-app-user-pool-prod") | .Id')
+          if [ -n "$USER_POOL_ID" ]; then
+            echo "Found User Pool: $USER_POOL_ID"
+            aws cognito-idp delete-user-pool-domain --domain townwink-india-prod --user-pool-id $USER_POOL_ID || true
+            aws cognito-idp delete-user-pool-domain --domain townwink-in-prod --user-pool-id $USER_POOL_ID || true
+          fi
+
       - name: 📦 Deploy Backend (Serverless)
         working-directory: bookclub-app/backend
         env:
@@ -78,7 +89,7 @@ jobs:
           REACT_APP_COGNITO_REGION=ap-south-1
           REACT_APP_COGNITO_USER_POOL_ID=$USER_POOL_ID
           REACT_APP_COGNITO_CLIENT_ID=$USER_POOL_CLIENT_ID
-          REACT_APP_COGNITO_DOMAIN=townwink-in-prod.auth.ap-south-1.amazoncognito.com
+          REACT_APP_COGNITO_DOMAIN=townwink-india-prod.auth.ap-south-1.amazoncognito.com
           REACT_APP_OAUTH_REDIRECT_SIGNIN=https://townwink.com/auth/callback
           REACT_APP_OAUTH_REDIRECT_SIGNOUT=https://townwink.com/
           REACT_APP_DOMAIN=townwink.com
