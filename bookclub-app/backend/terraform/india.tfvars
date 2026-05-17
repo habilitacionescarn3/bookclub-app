@@ -6,4 +6,5 @@ frontend_bucket_name = "townwink-india-frontend"
 manage_dns           = true
 enable_api_mapping   = false
 book_covers_bucket_name = "townwink-india-book-covers"
-create_certificate   = true
+create_certificate   = false
+existing_certificate_arn = ""

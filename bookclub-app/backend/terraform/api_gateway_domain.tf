@@ -21,7 +21,7 @@ data "aws_cloudformation_export" "user_pool_client_id" {
 # Existing ACM certificate data lookup
 data "aws_acm_certificate" "existing_api_cert" {
   provider    = aws.us_east_1
-  count       = var.manage_dns && !var.create_certificate ? 1 : 0
+  count       = var.manage_dns && !var.create_certificate && var.existing_certificate_arn == "" ? 1 : 0
   domain      = var.api_fqdn
   statuses    = ["ISSUED"]
   most_recent = true
@@ -73,7 +73,7 @@ resource "aws_acm_certificate_validation" "api_cert_validation_edge" {
 resource "aws_api_gateway_domain_name" "api_domain" {
   count           = var.manage_dns ? 1 : 0
   domain_name     = var.api_fqdn
-  certificate_arn = var.create_certificate ? aws_acm_certificate_validation.api_cert_validation_edge[0].certificate_arn : data.aws_acm_certificate.existing_api_cert[0].arn
+  certificate_arn = var.create_certificate ? aws_acm_certificate_validation.api_cert_validation_edge[0].certificate_arn : (var.existing_certificate_arn != "" ? var.existing_certificate_arn : data.aws_acm_certificate.existing_api_cert[0].arn)
   endpoint_configuration {
     types = ["EDGE"]
   }
