@@ -50,17 +50,6 @@ jobs:
             -backend-config="key=terraform.tfstate"
           terraform apply -var-file="india.tfvars" -auto-approve
 
-      - name: 🧹 Cleanup Orphaned Cognito Domain
-        env:
-          AWS_REGION: ap-south-1
-        run: |
-          USER_POOL_ID=$(aws cognito-idp list-user-pools --max-results 60 | jq -r '.UserPools[] | select(.Name=="bookclub-app-user-pool-prod") | .Id')
-          if [ -n "$USER_POOL_ID" ]; then
-            echo "Found User Pool: $USER_POOL_ID"
-            aws cognito-idp delete-user-pool-domain --domain townwink-india-prod --user-pool-id $USER_POOL_ID || true
-            aws cognito-idp delete-user-pool-domain --domain townwink-in-prod --user-pool-id $USER_POOL_ID || true
-          fi
-
       - name: 📦 Deploy Backend (Serverless)
         working-directory: bookclub-app/backend
         env:
