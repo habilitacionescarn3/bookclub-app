@@ -64,6 +64,7 @@ jobs:
         working-directory: bookclub-app/frontend
         env:
           DEPLOY_TARGET: india
+          CI: false
         run: |
           # Fetch dynamic values from serverless output
           cd ../backend
