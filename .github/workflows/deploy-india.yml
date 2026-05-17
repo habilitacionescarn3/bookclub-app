@@ -54,6 +54,8 @@ jobs:
         working-directory: bookclub-app/backend
         env:
           DEPLOY_TARGET: india
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
           npm install
           npx serverless deploy --stage prod --region ap-south-1
