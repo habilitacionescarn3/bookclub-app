@@ -1502,7 +1502,7 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${self:service}-${self:provider.stage}-bedrock-analyze-queue
-        VisibilityTimeout: 120
+        VisibilityTimeout: 900
         RedrivePolicy:
           deadLetterTargetArn: !GetAtt BedrockAnalyzeDLQ.Arn
           maxReceiveCount: 5
