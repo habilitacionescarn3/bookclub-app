@@ -1691,8 +1691,7 @@ resources:
                     - s3:GetBucketAcl
                     - s3:PutBucketAcl
                   Resource: 
-                    - arn:aws:s3:::${self:service}-${self:provider.stage}-*
-
+                    - "*"
     # Permission for CloudFormation to invoke S3 bucket manager
     S3BucketManagerInvokePermission:
       Type: AWS::Lambda::Permission
