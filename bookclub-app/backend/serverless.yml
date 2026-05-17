@@ -162,6 +162,14 @@ plugins:
   - serverless-offline
   - serverless-plugin-existing-s3
   - serverless-prune-plugin
+package:
+  patterns:
+    - '!terraform/**'
+    - '!__tests__/**'
+    - '!coverage/**'
+    - '!test_output*.txt'
+    - '!.git/**'
+
 functions:
   # Book-related functions
   createBook:
