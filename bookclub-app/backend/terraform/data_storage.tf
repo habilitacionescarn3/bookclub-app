@@ -233,3 +233,16 @@ resource "aws_ssm_parameter" "lost_found_table_name" {
   type  = "String"
   value = "${var.service_name}-lost-found-${var.stage}"
 }
+
+# Write OAuth secrets to SSM for Serverless to consume
+resource "aws_ssm_parameter" "google_client_id" {
+  name  = "${var.ssm_path_prefix}/google_client_id"
+  type  = "String"
+  value = var.google_client_id
+}
+
+resource "aws_ssm_parameter" "google_client_secret" {
+  name  = "${var.ssm_path_prefix}/google_client_secret"
+  type  = "SecureString"
+  value = var.google_client_secret
+}
