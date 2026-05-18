@@ -76,6 +76,10 @@ Admins, moderators, or managers of communities, groups, apartments, housing soci
 
 Community Library provides software infrastructure only and has no legal obligation to pre-screen, monitor, control, verify, approve, or be responsible for content uploaded, posted, shared, or transmitted by users.
 
+However, Community Library may invest in tools, processes, reporting mechanisms, automated detection, manual review, or other reasonable measures to identify, restrict, remove, or address insulting, abusive, unlawful, or inappropriate content. Any failure, delay, error, or inability to detect, remove, restrict, or act on such content will not make Community Library legally liable for that content or for any consequences arising from it.
+
+The individual user who uploads, publishes, shares, or transmits such content remains solely responsible. Community Library may take appropriate action against such users, including content removal, warnings, account restrictions, suspension, permanent banning, reporting to relevant authorities, or any other platform-related action considered appropriate.
+
 Users should promptly report insulting, abusive, unlawful, or inappropriate content to the relevant community admins, moderators, or managers so that they may review and delete or otherwise address such content.
 
 11
