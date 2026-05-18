@@ -2,6 +2,7 @@
   "region": "us-east-1",
   "apiCustomDomain": "api.booklub.shop",
   "userPoolDomainPrefix": "booklub-au",
+  "corsOrigin": "https://booklub.shop",
   "oauth": {
     "redirectSignIn": "https://booklub.shop/auth/callback",
     "redirectSignOut": "https://booklub.shop/"
