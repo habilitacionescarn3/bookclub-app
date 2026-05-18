@@ -65,6 +65,20 @@ Continued access to or use of the platform after such updates will be treated as
 Users are encouraged to review the Terms of Service periodically to remain aware of any changes.
 
 10
+User Content, Community Moderation, and Legal Responsibility
+Users are solely responsible for any content, messages, listings, images, comments, posts, or other material they upload, publish, share, or transmit through the platform.
+
+Users must not upload, publish, share, or transmit insulting, abusive, harassing, threatening, defamatory, obscene, hateful, discriminatory, unlawful, or otherwise inappropriate content.
+
+Any user who uploads, publishes, shares, or transmits such content is solely liable for the consequences of that content and will bear any legal consequences, claims, penalties, damages, or proceedings arising from it.
+
+Admins, moderators, or managers of communities, groups, apartments, housing societies, residential communities, associations, or similar groups using the platform must make reasonable efforts to maintain a respectful and safe environment. They should act as quickly as reasonably possible to detect, review, delete, restrict, or otherwise address inappropriate content, and where necessary, report such content or conduct to the appropriate authorities.
+
+Community Library provides software infrastructure only and has no legal obligation to pre-screen, monitor, control, verify, approve, or be responsible for content uploaded, posted, shared, or transmitted by users.
+
+Users should promptly report insulting, abusive, unlawful, or inappropriate content to the relevant community admins, moderators, or managers so that they may review and delete or otherwise address such content.
+
+11
 User Exit and Data Removal
 Users are free to stop using the platform or request to leave the system at any time.
 
