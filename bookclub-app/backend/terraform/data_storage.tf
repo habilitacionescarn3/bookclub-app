@@ -138,6 +138,116 @@ resource "aws_dynamodb_table" "bookclub_members" {
   }
 }
 
+# DynamoDB table for posts
+resource "aws_dynamodb_table" "posts" {
+  name         = "${var.service_name}-posts-${var.stage}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "postId"
+
+  # Primary key
+  attribute {
+    name = "postId"
+    type = "S"
+  }
+
+  # Attributes referenced by the GSI
+  attribute {
+    name = "clubId"
+    type = "S"
+  }
+
+  # Composite sort key for ordering within a club (e.g. "1746872100000#post456")
+  attribute {
+    name = "createdAt_postId"
+    type = "S"
+  }
+
+  # Non-key attributes declared for documentation/clarity
+  attribute {
+    name = "authorId"
+    type = "S"
+  }
+
+  attribute {
+    name = "text"
+    type = "S"
+  }
+
+  attribute {
+    name = "images"
+    type = "S" # store as JSON string or use native list in application; declared as S here for clarity
+  }
+
+  attribute {
+    name = "createdAt"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name               = "ClubPostsIndex"
+    hash_key           = "clubId"
+    range_key          = "createdAt_postId"
+    projection_type    = "ALL"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# DynamoDB table for comments
+# Keys renamed to descriptive names: partition key = postId, sort key = createdAt_commentId
+# Expected item keys:
+#  postId = "post123"                         (partition key)
+#  createdAt_commentId = "1746872100000#cmt456" (sort key, timestamp first for order + commentId for uniqueness)
+resource "aws_dynamodb_table" "comments" {
+  name         = "${var.service_name}-comments-${var.stage}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "postId"
+  range_key    = "createdAt_commentId"
+
+  # Primary composite keys
+  attribute {
+    name = "postId"
+    type = "S"
+  }
+
+  attribute {
+    name = "createdAt_commentId"
+    type = "S"
+  }
+
+  # Non-key attributes declared for clarity. DynamoDB supports native lists for `images` when writing via SDK.
+  attribute {
+    name = "commentId"
+    type = "S"
+  }
+
+  attribute {
+    name = "userId"
+    type = "S"
+  }
+
+  attribute {
+    name = "text"
+    type = "S"
+  }
+
+  attribute {
+    name = "images"
+    type = "S" # application may store as JSON string or write as native List type via SDK
+  }
+
+  attribute {
+    name = "createdAt"
+    type = "S"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
 # S3 bucket for book covers
 resource "aws_s3_bucket" "book_covers" {
   bucket = "${var.service_name}-${var.stage}-book-covers"
@@ -232,4 +342,18 @@ resource "aws_ssm_parameter" "lost_found_table_name" {
   name  = "/${var.service_name}/${var.stage}/lost_found_table_name"
   type  = "String"
   value = "${var.service_name}-lost-found-${var.stage}"
+}
+
+# Expose posts table name via SSM
+resource "aws_ssm_parameter" "posts_table_name" {
+  name  = "/${var.service_name}/${var.stage}/posts_table_name"
+  type  = "String"
+  value = aws_dynamodb_table.posts.name
+}
+
+# Expose comments table name via SSM
+resource "aws_ssm_parameter" "comments_table_name" {
+  name  = "/${var.service_name}/${var.stage}/comments_table_name"
+  type  = "String"
+  value = aws_dynamodb_table.comments.name
 }

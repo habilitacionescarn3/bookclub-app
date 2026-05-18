@@ -11,6 +11,8 @@ const USERS_FILE = path.join(STORAGE_DIR, 'users.json');
 const BOOKS_FILE = path.join(STORAGE_DIR, 'books.json');
 const CLUBS_FILE = path.join(STORAGE_DIR, 'clubs.json');
 const CLUB_MEMBERS_FILE = path.join(STORAGE_DIR, 'club-members.json');
+const POSTS_FILE = path.join(STORAGE_DIR, 'posts.json');
+const COMMENTS_FILE = path.join(STORAGE_DIR, 'comments.json');
 const TOY_LISTINGS_FILE = path.join(STORAGE_DIR, 'toy-listings.json');
 const LOST_FOUND_FILE = path.join(STORAGE_DIR, 'lost-found.json');
 const CLUB_EMAIL_INVITES_FILE = path.join(STORAGE_DIR, 'club-email-invites.json');
@@ -129,6 +131,52 @@ class LocalStorage {
     }
   }
 
+  static loadPosts() {
+    if (!OFFLINE) return {};
+    try {
+      const exists = fs.existsSync(POSTS_FILE);
+      if (exists) {
+        const data = fs.readFileSync(POSTS_FILE, 'utf8');
+        return JSON.parse(data);
+      }
+    } catch (error) {
+      console.error('[LocalStorage] Error loading posts:', error);
+    }
+    return {};
+  }
+
+  static savePosts(posts) {
+    if (!OFFLINE) return;
+    try {
+      fs.writeFileSync(POSTS_FILE, JSON.stringify(posts, null, 2));
+    } catch (error) {
+      console.error('[LocalStorage] Error saving posts:', error);
+    }
+  }
+
+  static loadComments() {
+    if (!OFFLINE) return {};
+    try {
+      const exists = fs.existsSync(COMMENTS_FILE);
+      if (exists) {
+        const data = fs.readFileSync(COMMENTS_FILE, 'utf8');
+        return JSON.parse(data);
+      }
+    } catch (error) {
+      console.error('[LocalStorage] Error loading comments:', error);
+    }
+    return {};
+  }
+
+  static saveComments(comments) {
+    if (!OFFLINE) return;
+    try {
+      fs.writeFileSync(COMMENTS_FILE, JSON.stringify(comments, null, 2));
+    } catch (error) {
+      console.error('[LocalStorage] Error saving comments:', error);
+    }
+  }
+
   // User operations
   static async createUser(user) {
     if (!OFFLINE) return user;
@@ -217,6 +265,87 @@ class LocalStorage {
       return true;
     }
     return false;
+  }
+
+  // Post operations
+  static async createPost(post) {
+    if (!OFFLINE) return post;
+    const posts = this.loadPosts();
+    posts[post.postId] = post;
+    this.savePosts(posts);
+    return post;
+  }
+
+  static async getPost(postId) {
+    if (!OFFLINE) return null;
+    const posts = this.loadPosts();
+    return posts[postId] || null;
+  }
+
+  static async listPostsByClub(clubId) {
+    if (!OFFLINE) return [];
+    const posts = this.loadPosts();
+    return Object.values(posts)
+      .filter(post => post.clubId === clubId)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
+
+  static async deletePost(postId) {
+    if (!OFFLINE) return false;
+    const posts = this.loadPosts();
+    if (!posts[postId]) return false;
+    delete posts[postId];
+    this.savePosts(posts);
+    return true;
+  }
+
+  // Comment operations
+  static async createComment(comment) {
+    if (!OFFLINE) return comment;
+    const comments = this.loadComments();
+    comments[`${comment.postId}:${comment.commentId}`] = comment;
+    this.saveComments(comments);
+    return comment;
+  }
+
+  static async listCommentsByPost(postId) {
+    if (!OFFLINE) return [];
+    const comments = this.loadComments();
+    return Object.values(comments)
+      .filter(comment => comment.postId === postId)
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+  }
+
+  static async getComment(postId, commentId) {
+    if (!OFFLINE) return null;
+    const comments = this.loadComments();
+    return comments[`${postId}:${commentId}`] || null;
+  }
+
+  static async deleteComment(postId, commentId) {
+    if (!OFFLINE) return false;
+    const comments = this.loadComments();
+    const key = `${postId}:${commentId}`;
+    if (!comments[key]) return false;
+    delete comments[key];
+    this.saveComments(comments);
+    return true;
+  }
+
+  static async deleteCommentsByPost(postId) {
+    if (!OFFLINE) return 0;
+    const comments = this.loadComments();
+    let deleted = 0;
+    for (const key of Object.keys(comments)) {
+      if (comments[key].postId === postId) {
+        delete comments[key];
+        deleted += 1;
+      }
+    }
+    if (deleted > 0) {
+      this.saveComments(comments);
+    }
+    return deleted;
   }
 
   // Simple authentication
@@ -384,7 +513,7 @@ class LocalStorage {
   static async isClubMember(clubId, userId) {
     if (!OFFLINE) return false;
     const member = await this.getClubMember(clubId, userId);
-    return member !== null;
+    return member !== null && (member.status || 'active') === 'active';
   }
 
   static async deleteAllClubMembers(clubId) {
