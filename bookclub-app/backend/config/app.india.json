@@ -2,7 +2,6 @@
   "region": "ap-south-1",
   "apiCustomDomain": "api.townwink.com",
   "userPoolDomainPrefix": "townwink-india",
-  "corsOrigin": "https://townwink.com",
   "oauth": {
     "redirectSignIn": "https://townwink.com/auth/callback",
     "redirectSignOut": "https://townwink.com/"
