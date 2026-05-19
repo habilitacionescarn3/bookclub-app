@@ -184,7 +184,7 @@ functions:
           method: POST
           path: /books
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -208,7 +208,7 @@ functions:
           method: POST
           path: /strands/analyze-cover
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -256,7 +256,7 @@ functions:
           method: GET
           path: /users/{userId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -277,7 +277,7 @@ functions:
           method: GET
           path: /users/query
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -298,7 +298,7 @@ functions:
           method: PATCH
           path: /dm/conversations/{conversationId}/read
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -320,7 +320,7 @@ functions:
           method: POST
           path: /dm/conversations
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -341,7 +341,7 @@ functions:
           method: GET
           path: /dm/conversations
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -362,7 +362,7 @@ functions:
           method: POST
           path: /dm/conversations/{conversationId}/messages
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -383,7 +383,7 @@ functions:
           method: GET
           path: /dm/conversations/{conversationId}/messages
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -404,7 +404,7 @@ functions:
           method: GET
           path: /books/summary
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -425,7 +425,7 @@ functions:
           method: GET
           path: /books/metadata
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -446,7 +446,7 @@ functions:
           method: GET
           path: /books/{bookId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -463,7 +463,7 @@ functions:
           method: GET
           path: /books
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -480,7 +480,7 @@ functions:
           method: PUT
           path: /books/{bookId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -501,7 +501,7 @@ functions:
           method: DELETE
           path: /books/{bookId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -523,7 +523,7 @@ functions:
           method: POST
           path: /books/{bookId}/extract-metadata
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -545,7 +545,7 @@ functions:
           method: POST
           path: /auth/register
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -562,7 +562,7 @@ functions:
           method: POST
           path: /auth/login
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -579,7 +579,7 @@ functions:
           method: GET
           path: /users/me
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -600,7 +600,7 @@ functions:
           method: PUT
           path: /users/me
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -687,7 +687,7 @@ functions:
           method: POST
           path: /upload/multipart/start
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -708,7 +708,7 @@ functions:
           method: POST
           path: /upload/multipart/sign-part
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -729,7 +729,7 @@ functions:
           method: POST
           path: /upload/multipart/complete
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -751,7 +751,7 @@ functions:
           method: POST
           path: /posts
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -772,7 +772,7 @@ functions:
           method: GET
           path: /posts/feed
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -793,7 +793,7 @@ functions:
           method: DELETE
           path: /posts/{postId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -814,7 +814,7 @@ functions:
           method: POST
           path: /posts/{postId}/comments
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -835,7 +835,7 @@ functions:
           method: DELETE
           path: /posts/{postId}/comments/{commentId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -857,7 +857,7 @@ functions:
           method: POST
           path: /images/extract-metadata
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -879,7 +879,7 @@ functions:
           method: GET
           path: /images/metadata
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -990,7 +990,7 @@ functions:
           method: POST
           path: /clubs
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1027,7 +1027,7 @@ functions:
           method: GET
           path: /clubs/{clubId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1044,7 +1044,7 @@ functions:
           method: GET
           path: /clubs/{clubId}/posts
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1065,7 +1065,7 @@ functions:
           method: GET
           path: /clubs
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1086,7 +1086,7 @@ functions:
           method: POST
           path: /clubs/join
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1107,7 +1107,7 @@ functions:
           method: DELETE
           path: /clubs/{clubId}/leave
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1128,7 +1128,7 @@ functions:
           method: PATCH
           path: /clubs/{clubId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1149,7 +1149,7 @@ functions:
           method: DELETE
           path: /clubs/{clubId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1171,7 +1171,7 @@ functions:
           method: GET
           path: /clubs/browse
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1189,7 +1189,7 @@ functions:
           method: GET
           path: /clubs/{clubId}/requests
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1210,7 +1210,7 @@ functions:
           method: GET
           path: clubs/{clubId}/members
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1231,7 +1231,7 @@ functions:
           method: DELETE
           path: clubs/{clubId}/members/{userId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1252,7 +1252,7 @@ functions:
           method: PATCH
           path: clubs/{clubId}/members/{userId}/role
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1273,7 +1273,7 @@ functions:
           method: POST
           path: clubs/{clubId}/requests/{userId}/approve
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1294,7 +1294,7 @@ functions:
           method: POST
           path: clubs/{clubId}/requests/{userId}/reject
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1315,7 +1315,7 @@ functions:
           method: POST
           path: clubs/{clubId}/invites
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1333,7 +1333,7 @@ functions:
           method: GET
           path: clubs/{clubId}/invites
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1351,7 +1351,7 @@ functions:
           method: DELETE
           path: clubs/{clubId}/invites/{email}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1370,7 +1370,7 @@ functions:
           method: POST
           path: /clubs/{clubId}/request
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1392,7 +1392,7 @@ functions:
           method: GET
           path: /lost-found
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1409,7 +1409,7 @@ functions:
           method: GET
           path: /lost-found/{lostFoundId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1422,7 +1422,7 @@ functions:
           method: POST
           path: /lost-found
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1443,7 +1443,7 @@ functions:
           method: GET
           path: /lost-found/mine
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1464,7 +1464,7 @@ functions:
           method: PATCH
           path: /lost-found/{lostFoundId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1485,7 +1485,7 @@ functions:
           method: DELETE
           path: /lost-found/{lostFoundId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1531,7 +1531,7 @@ functions:
           method: POST
           path: /voice/transcribe
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1548,7 +1548,7 @@ functions:
           method: OPTIONS
           path: /voice/transcribe
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1583,7 +1583,7 @@ functions:
           method: POST
           path: /swap-toys
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1621,7 +1621,7 @@ functions:
           method: PUT
           path: /swap-toys/{listingId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
@@ -1642,7 +1642,7 @@ functions:
           method: DELETE
           path: /swap-toys/{listingId}
           cors:
-            origin: '*'
+            origin: '${self:custom.appConfig.corsOrigin}'
             headers:
               - Content-Type
               - Authorization
