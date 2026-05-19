@@ -162,7 +162,7 @@ custom:
 
   prune:
     automatic: true
-    number: 5
+    number: 2
 
 plugins:
   - serverless-offline
