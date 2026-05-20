@@ -53,7 +53,7 @@ class BookService {
     const created = await Book.create(bookData, userId);
 
     // 6. Update Mappings
-    if (isExtractingFromImage && data.s3Bucket && data.s3Key && process.env.NODE_ENV !== 'test') {
+    if (data.s3Bucket && data.s3Key && process.env.NODE_ENV !== 'test') {
       await this.setMappedBookId(data.s3Bucket, data.s3Key, created.bookId, userId);
     }
 
