@@ -80,9 +80,13 @@ async function sendEmail(to, subject, text, html) {
   }
 
   const from = process.env.NOTIFY_FROM_EMAIL;
+  const recipientList = typeof to === 'string'
+    ? to.split(',').map(email => email.trim()).filter(Boolean)
+    : Array.isArray(to) ? to : [to];
+
   const params = {
     Source: from,
-    Destination: { ToAddresses: [to] },
+    Destination: { ToAddresses: recipientList },
     Message: {
       Subject: { Data: subject },
       Body: {
