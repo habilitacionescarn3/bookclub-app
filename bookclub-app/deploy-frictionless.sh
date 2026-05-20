@@ -207,7 +207,9 @@ EOF
   
   # 4. Sync to S3
   echo "📤 Uploading to S3..."
-  aws s3 sync frontend/build s3://$ENV-frontend-bucket --delete --profile $AWS_PROFILE
+  FRONTEND_BUCKET=$(grep 'frontend_bucket_name' backend/terraform/$ENV.tfvars | sed -E 's/.*=\s*"([^"]+)".*/\1/')
+  echo "🪣 Target S3 Bucket: $FRONTEND_BUCKET"
+  aws s3 sync frontend/build s3://$FRONTEND_BUCKET --delete --profile $AWS_PROFILE
 
   # 5. Invalidate CloudFront Cache
   echo "🧹 Invalidating CloudFront cache for $DOMAIN..."
@@ -215,7 +217,7 @@ EOF
   
   if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" = "None" ]; then
     # Fallback: query by S3 bucket origin name
-    DISTRIBUTION_ID=$(aws cloudfront list-distributions --profile $AWS_PROFILE --query "DistributionList.Items[?Origins.Items[?contains(DomainName, '$ENV-frontend-bucket')]].Id" --output text 2>/dev/null || echo "")
+    DISTRIBUTION_ID=$(aws cloudfront list-distributions --profile $AWS_PROFILE --query "DistributionList.Items[?Origins.Items[?contains(DomainName, '$FRONTEND_BUCKET')]].Id" --output text 2>/dev/null || echo "")
   fi
 
   if [ ! -z "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
