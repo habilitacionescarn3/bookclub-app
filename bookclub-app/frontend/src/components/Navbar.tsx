@@ -9,7 +9,7 @@ import { config } from '../config';
 import MobileTabBar from './MobileTabBar';
 
 const Navbar: React.FC = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, hasClubAccess } = useAuth();
   const { name: brandName } = useBrand();
   const { openModal } = useUploadModal();
   const location = useLocation();
@@ -128,14 +128,16 @@ const Navbar: React.FC = () => {
                 🧾 Lost & Found
               </Link>
 
-              <Link
-                to={isAuthenticated ? '/clubs' : '/clubs/browse'}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive('/clubs') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                }`}
-              >
-                Clubs
-              </Link>
+              {hasClubAccess && (
+                <Link
+                  to="/clubs"
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isActive('/clubs') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  Clubs
+                </Link>
+              )}
 
               {isAuthenticated && (
                 <>

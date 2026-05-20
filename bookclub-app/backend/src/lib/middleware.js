@@ -141,6 +141,24 @@ const withOptionalAuth = (handler) => withErrorHandler(async (event, context) =>
   return handler(event, context);
 });
 
+/**
+ * Ensures the user's email is in the allowed list of emails.
+ */
+const withClubAccess = (handler) => withUser(async (event, context) => {
+  const { currentUser } = event;
+  const adminEmailsStr = process.env.ADMIN_NOTIFY_EMAIL || 'madhukar.pedagani@gmail.com,kalyan.kaykk@gmail.com,puneet.khanna0404@gmail.com';
+  const allowedEmails = adminEmailsStr.split(',').map(e => e.trim().toLowerCase());
+  
+  const userEmail = currentUser.email ? currentUser.email.toLowerCase() : '';
+  const isAllowed = allowedEmails.includes(userEmail) || currentUser.role === 'superadmin';
+  
+  if (!isAllowed) {
+    return response.forbidden('Forbidden: You do not have access to clubs features');
+  }
+  
+  return handler(event, context);
+});
+
 module.exports = {
   withErrorHandler,
   withAuth,
@@ -149,4 +167,5 @@ module.exports = {
   withClubAdmin,
   withClubOwner,
   withOptionalAuth,
+  withClubAccess,
 };

@@ -7,6 +7,7 @@ import EditClubModal from '../components/EditClubModal';
 import JoinClubModal from '../components/JoinClubModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import InviteByEmailModal from '../components/InviteByEmailModal';
+import CreateClubModal from '../components/CreateClubModal';
 import ClubCard from '../components/ClubCard';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
@@ -15,10 +16,11 @@ const Clubs: React.FC = () => {
   const [clubs, setClubs] = useState<BookClub[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user } = useAuth();
+  const { user, hasClubAccess } = useAuth();
   const { addNotification } = useNotification();
   const [editingClub, setEditingClub] = useState<BookClub | null>(null);
   const [showJoin, setShowJoin] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
   const [clubToDelete, setClubToDelete] = useState<BookClub | null>(null);
   const [invitingClub, setInvitingClub] = useState<BookClub | null>(null);
   const location = useLocation();
@@ -97,6 +99,14 @@ const Clubs: React.FC = () => {
             >
               Join with Code
             </button>
+            {hasClubAccess && (
+              <button 
+                onClick={() => setShowCreate(true)} 
+                className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+              >
+                Create Club
+              </button>
+            )}
           </div>
         </div>
 
@@ -184,18 +194,20 @@ const Clubs: React.FC = () => {
         )}
 
         {/* Contact CTA */}
-        <div className="mt-10 rounded-3xl bg-indigo-50 border border-indigo-100 p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div>
-            <h3 className="text-xl font-black text-indigo-900 uppercase tracking-tight">Want to start a new club?</h3>
-            <p className="text-sm text-indigo-700 mt-1">Reach out and we'll set one up for your community.</p>
+        {!hasClubAccess && (
+          <div className="mt-10 rounded-3xl bg-indigo-50 border border-indigo-100 p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-xl font-black text-indigo-900 uppercase tracking-tight">Want to start a new club?</h3>
+              <p className="text-sm text-indigo-700 mt-1">Reach out and we'll set one up for your community.</p>
+            </div>
+            <a
+              href="/contact"
+              className="flex-shrink-0 px-7 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-sm"
+            >
+              Contact Us →
+            </a>
           </div>
-          <a
-            href="/contact"
-            className="flex-shrink-0 px-7 py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-sm"
-          >
-            Contact Us →
-          </a>
-        </div>
+        )}
 
         {invitingClub && (
           <InviteByEmailModal
@@ -209,6 +221,17 @@ const Clubs: React.FC = () => {
           <JoinClubModal
             onClose={() => setShowJoin(false)}
             onClubJoined={async (club) => { setShowJoin(false); await load(); }}
+          />
+        )}
+
+        {showCreate && (
+          <CreateClubModal
+            onClose={() => setShowCreate(false)}
+            onClubCreated={async (newClub) => {
+              setShowCreate(false);
+              await load();
+              addNotification('success', `Club "${newClub.name}" created successfully`);
+            }}
           />
         )}
 

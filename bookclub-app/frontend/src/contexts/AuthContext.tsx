@@ -14,6 +14,7 @@ interface AuthContextType {
   logoutWithSessionExpired: () => void;
   isAuthenticated: boolean;
   isSuperAdmin: boolean;
+  hasClubAccess: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -176,6 +177,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const ALLOWED_CLUB_EMAILS = React.useMemo(() => [
+    'madhukar.pedagani@gmail.com',
+    'kalyan.kaykk@gmail.com',
+    'puneet.khanna0404@gmail.com'
+  ], []);
+
+  const hasClubAccess = React.useMemo(() => {
+    if (!user) return false;
+    if (user.role === 'superadmin') return true;
+    return ALLOWED_CLUB_EMAILS.includes(user.email?.toLowerCase());
+  }, [user, ALLOWED_CLUB_EMAILS]);
+
   const value: AuthContextType = {
     user,
     loading,
@@ -184,6 +197,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     logoutWithSessionExpired,
     isAuthenticated: !!user,
     isSuperAdmin: user?.role === 'superadmin',
+    hasClubAccess,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
