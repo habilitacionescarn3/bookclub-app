@@ -208,6 +208,22 @@ EOF
   # 4. Sync to S3
   echo "📤 Uploading to S3..."
   aws s3 sync frontend/build s3://$ENV-frontend-bucket --delete --profile $AWS_PROFILE
+
+  # 5. Invalidate CloudFront Cache
+  echo "🧹 Invalidating CloudFront cache for $DOMAIN..."
+  DISTRIBUTION_ID=$(aws cloudfront list-distributions --profile $AWS_PROFILE --query "DistributionList.Items[?Aliases.Items[?contains(@, '$DOMAIN')]].Id" --output text 2>/dev/null || echo "")
+  
+  if [ -z "$DISTRIBUTION_ID" ] || [ "$DISTRIBUTION_ID" = "None" ]; then
+    # Fallback: query by S3 bucket origin name
+    DISTRIBUTION_ID=$(aws cloudfront list-distributions --profile $AWS_PROFILE --query "DistributionList.Items[?Origins.Items[?contains(DomainName, '$ENV-frontend-bucket')]].Id" --output text 2>/dev/null || echo "")
+  fi
+
+  if [ ! -z "$DISTRIBUTION_ID" ] && [ "$DISTRIBUTION_ID" != "None" ]; then
+    echo "⚡ Found CloudFront Distribution ID: $DISTRIBUTION_ID"
+    aws cloudfront create-invalidation --profile $AWS_PROFILE --distribution-id $DISTRIBUTION_ID --paths "/*"
+  else
+    echo "⚠️  CloudFront Distribution ID not found for $DOMAIN or S3 origin. Please invalidate cache manually if needed."
+  fi
 fi
 
 echo "✅ Deployment Complete for $BRAND ($ENV)!"
