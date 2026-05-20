@@ -35,17 +35,34 @@ module.exports.handler = async (event) => {
       }
 
       // 1. Create or retrieve draft book/item
-      const item = await BookService.create({
-        title: isLibrary ? 'Processing…' : deriveTitleFromKey(key),
-        description: isLibrary ? '' : 'Book uploaded via image - metadata processing in progress',
-        status: isLibrary ? 'draft' : 'available',
-        coverImage: fileUrl,
-        category: libraryType,
-        s3Bucket: bucket,
-        s3Key: key,
-        extractFromImage: false, // Bedrock will do this asynchronously
-        metadataSource: isLibrary ? undefined : 'image-upload-pending'
-      }, userId);
+      let item = null;
+      const existingId = await BookService.getMappedBookId(bucket, key);
+      if (existingId) {
+        try {
+          item = await BookService.getById(existingId);
+          logger.info({ bookId: existingId, key }, '[ImageProcessor] Found existing draft book/item mapping');
+        } catch (e) {
+          logger.warn({ existingId, key, error: e.message }, '[ImageProcessor] Mapped book not found in DB, will recreate');
+        }
+      }
+
+      if (!item) {
+        item = await BookService.create({
+          title: isLibrary ? 'Processing…' : deriveTitleFromKey(key),
+          description: isLibrary ? '' : 'Book uploaded via image - metadata processing in progress',
+          status: isLibrary ? 'draft' : 'available',
+          coverImage: fileUrl,
+          category: libraryType,
+          s3Bucket: bucket,
+          s3Key: key,
+          extractFromImage: false, // Bedrock will do this asynchronously
+          metadataSource: isLibrary ? undefined : 'image-upload-pending'
+        }, userId);
+
+        if (process.env.NODE_ENV !== 'test') {
+          await BookService.setMappedBookId(bucket, key, item.bookId, userId);
+        }
+      }
 
       // 2. Enqueue for Bedrock Analysis
       const queueUrl = config.BEDROCK_ANALYZE_QUEUE_URL;
