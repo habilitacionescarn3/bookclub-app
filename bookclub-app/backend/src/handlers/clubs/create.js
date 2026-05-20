@@ -1,7 +1,7 @@
 const { z } = require('zod');
 const response = require('../../lib/response');
 const ClubService = require('../../services/club-service');
-const { withAuth } = require('../../lib/middleware');
+const { withClubAccess } = require('../../lib/middleware');
 
 const CreateClubSchema = z.object({
   name: z.string().min(1, 'Club name is required').max(100, 'Club name must be 100 characters or less'),
@@ -31,4 +31,4 @@ const handler = async (event) => {
   return response.success(club);
 };
 
-module.exports.handler = withAuth(handler);
+module.exports.handler = withClubAccess(handler);

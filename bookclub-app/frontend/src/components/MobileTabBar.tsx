@@ -5,7 +5,7 @@ import { useUploadModal } from '../contexts/UploadModalContext';
 import { apiService } from '../services/api';
 
 const MobileTabBar: React.FC = () => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, hasClubAccess } = useAuth();
   const { openModal } = useUploadModal();
   const location = useLocation();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -77,7 +77,7 @@ const MobileTabBar: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-inner md:hidden z-40">
-      <div className="max-w-7xl mx-auto grid grid-cols-5 text-[10px]">
+      <div className={`max-w-7xl mx-auto grid ${hasClubAccess ? 'grid-cols-5' : 'grid-cols-4'} text-[10px]`}>
         <Link
           to="/library"
           className={`flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${isActive('/library') && !isLostFoundPath ? 'text-indigo-700' : 'text-gray-600'}`}
@@ -106,13 +106,15 @@ const MobileTabBar: React.FC = () => {
           </button>
         )}
 
-        <Link
-          to={isAuthenticated ? '/clubs' : '/clubs/browse'}
-          className={`flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${isActive('/clubs') ? 'text-indigo-700' : 'text-gray-600'}`}
-        >
-          <Icon.Users />
-          <span className={isActive('/clubs') ? 'font-medium' : ''}>Clubs</span>
-        </Link>
+        {hasClubAccess && (
+          <Link
+            to="/clubs"
+            className={`flex flex-col items-center justify-center py-2 gap-0.5 transition-colors ${isActive('/clubs') ? 'text-indigo-700' : 'text-gray-600'}`}
+          >
+            <Icon.Users />
+            <span className={isActive('/clubs') ? 'font-medium' : ''}>Clubs</span>
+          </Link>
+        )}
 
         <Link
           to="/messages"

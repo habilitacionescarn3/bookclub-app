@@ -165,10 +165,17 @@ plugins:
 package:
   patterns:
     - '!terraform/**'
+    - '!terraform-backend/**'
+    - '!ocr-worker/**'
+    - '!.local-storage-test/**'
+    - '!scripts/**'
     - '!__tests__/**'
     - '!coverage/**'
     - '!test_output*.txt'
     - '!.git/**'
+    - '!package-lock.json'
+    - '!.env.example'
+    - '!.serverlessrc'
 
 functions:
   # Book-related functions
@@ -1011,6 +1018,10 @@ functions:
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   # Admin endpoints to manage join requests
   listJoinRequests:

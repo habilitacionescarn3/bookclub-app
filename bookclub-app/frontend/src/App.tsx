@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
 
 import ProtectedRoute from './components/ProtectedRoute';
+import ClubProtectedRoute from './components/ClubProtectedRoute';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
@@ -166,9 +167,9 @@ function App() {
                 <Route
                   path="/clubs"
                   element={
-                    <ProtectedRoute>
+                    <ClubProtectedRoute>
                       <Clubs />
-                    </ProtectedRoute>
+                    </ClubProtectedRoute>
                   }
                 />
                 <Route
@@ -177,27 +178,35 @@ function App() {
                 />
                 <Route
                   path="/clubs/browse"
-                  element={<BrowseClubs />}
+                  element={
+                    <ClubProtectedRoute>
+                      <BrowseClubs />
+                    </ClubProtectedRoute>
+                  }
                 />
                 <Route
                   path="/clubs/:clubId/requests"
                   element={
-                    <ProtectedRoute>
+                    <ClubProtectedRoute>
                       <ClubRequests />
-                    </ProtectedRoute>
+                    </ClubProtectedRoute>
                   }
                 />
                 <Route
                   path="/clubs/:clubId/members"
                   element={
-                    <ProtectedRoute>
+                    <ClubProtectedRoute>
                       <ClubMembers />
-                    </ProtectedRoute>
+                    </ClubProtectedRoute>
                   }
                 />
                 <Route
                   path="/clubs/:slug/explore"
-                  element={<ClubBooks />}
+                  element={
+                    <ClubProtectedRoute>
+                      <ClubBooks />
+                    </ClubProtectedRoute>
+                  }
                 />
                 <Route
                   path="/my-books"

@@ -1,7 +1,8 @@
 const { success, error } = require('../../lib/response');
 const BookClub = require('../../models/bookclub');
+const { withClubAccess } = require('../../lib/middleware');
 
-module.exports.handler = async (event) => {
+const handler = async (event) => {
   try {
     const qs = event?.queryStringParameters || {};
     const limit = qs && qs.limit ? parseInt(qs.limit, 10) : 10;
@@ -14,3 +15,5 @@ module.exports.handler = async (event) => {
     return error(e.message || 'Failed to browse clubs', 500);
   }
 };
+
+module.exports.handler = withClubAccess(handler);
