@@ -162,32 +162,15 @@ resource "aws_dynamodb_table" "posts" {
     type = "S"
   }
 
-  # Non-key attributes declared for documentation/clarity
-  attribute {
-    name = "authorId"
-    type = "S"
-  }
-
-  attribute {
-    name = "text"
-    type = "S"
-  }
-
-  attribute {
-    name = "images"
-    type = "S" # store as JSON string or use native list in application; declared as S here for clarity
-  }
-
-  attribute {
-    name = "createdAt"
-    type = "S"
-  }
+  # DynamoDB attribute blocks are only for table keys and index keys.
+  # Regular item fields such as authorId, text, images, and createdAt are
+  # schemaless and must not be declared here.
 
   global_secondary_index {
-    name               = "ClubPostsIndex"
-    hash_key           = "clubId"
-    range_key          = "createdAt_postId"
-    projection_type    = "ALL"
+    name            = "ClubPostsIndex"
+    hash_key        = "clubId"
+    range_key       = "createdAt_postId"
+    projection_type = "ALL"
   }
 
   lifecycle {
@@ -217,31 +200,9 @@ resource "aws_dynamodb_table" "comments" {
     type = "S"
   }
 
-  # Non-key attributes declared for clarity. DynamoDB supports native lists for `images` when writing via SDK.
-  attribute {
-    name = "commentId"
-    type = "S"
-  }
-
-  attribute {
-    name = "userId"
-    type = "S"
-  }
-
-  attribute {
-    name = "text"
-    type = "S"
-  }
-
-  attribute {
-    name = "images"
-    type = "S" # application may store as JSON string or write as native List type via SDK
-  }
-
-  attribute {
-    name = "createdAt"
-    type = "S"
-  }
+  # DynamoDB attribute blocks are only for table keys and index keys.
+  # Regular item fields such as commentId, userId, text, images, and createdAt
+  # are schemaless and must not be declared here.
 
   lifecycle {
     prevent_destroy = true
