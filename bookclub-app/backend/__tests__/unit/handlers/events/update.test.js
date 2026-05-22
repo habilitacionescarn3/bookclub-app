@@ -112,7 +112,7 @@ describe('events.update handler', () => {
     const res = await handler(event);
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data).toEqual(mockUpdatedEvent);
+    expect(body.data).toEqual({ ...mockUpdatedEvent, seriesUpdated: false });
     expect(Event.update).toHaveBeenCalledWith('event-1', {
       title: 'Updated Book Club Event',
       description: 'New Description',
