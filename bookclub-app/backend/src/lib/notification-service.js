@@ -64,8 +64,8 @@ function renderTemplate(templateId, templateData) {
       const { inviterName = 'A user', clubName = 'a book club', inviteCode = '', joinUrl = '' } = templateData || {};
       const brand = process.env.BRAND_NAME || 'BookClub';
       const subject = `You are invited to join the book club "${clubName}"`;
-      const text = `${inviterName} has invited you to join the book club "${clubName}" on ${brand}!\n\nTo join, go to ${joinUrl} and enter the invite code: ${inviteCode}\n\nHappy reading!`;
-      const html = `<p><strong>${inviterName}</strong> has invited you to join the book club <strong>${clubName}</strong> on ${brand}!</p>\n<p>To join, <a href="${joinUrl}">click here to open the app</a> and enter the invite code: <strong>${inviteCode}</strong></p>\n<p>Happy reading!</p>`;
+      const text = `${inviterName} has invited you to join the book club "${clubName}" on ${brand}!\n\nTo join, go to ${joinUrl}. You will be joined automatically once you log in or sign up with this email address.\n\nHappy reading!`;
+      const html = `<p><strong>${inviterName}</strong> has invited you to join the book club <strong>${clubName}</strong> on ${brand}!</p>\n<p>To join, <a href="${joinUrl}">click here to open the app</a>. You will be joined automatically once you log in or sign up with this email address.</p>\n<p>Happy reading!</p>`;
       return { subject, text, html };
     }
     default: {
