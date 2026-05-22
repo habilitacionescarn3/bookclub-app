@@ -33,6 +33,8 @@ jest.mock('../../services/api', () => ({
     commentEvent: jest.fn(),
     remindEvent: jest.fn(),
     createEvent: jest.fn(),
+    updateEvent: jest.fn(),
+    deleteEvent: jest.fn(),
   },
 }));
 
@@ -304,12 +306,12 @@ describe('ClubEvents Page Component', () => {
     expect(await screen.findByText('Select Gathering')).toBeInTheDocument();
 
     // Locate the modal element
-    const modalContainer = screen.getByText('Select Gathering').closest('.fixed');
+    const modalContainer = screen.getByText('Select Gathering').closest('.fixed') as HTMLElement;
     expect(modalContainer).toBeInTheDocument();
 
     // Verify both event choices are listed in the modal
-    const firstOption = within(modalContainer!).getByText('Reading Dune: Part 1');
-    const secondOption = within(modalContainer!).getByText('Reading Dune: Part 2');
+    const firstOption = within(modalContainer).getByText('Reading Dune: Part 1');
+    const secondOption = within(modalContainer).getByText('Reading Dune: Part 2');
     expect(firstOption).toBeInTheDocument();
     expect(secondOption).toBeInTheDocument();
 
@@ -320,6 +322,146 @@ describe('ClubEvents Page Component', () => {
     expect(screen.queryByText('Select Gathering')).not.toBeInTheDocument();
     expect(await screen.findByText('Central Library Room 3B')).toBeInTheDocument();
     expect(screen.getByText('Discussion of Part 2.')).toBeInTheDocument();
+  });
+
+  it('displays the Selected Date card when clicking a calendar day without events, and pre-populates datetime in schedule modal', async () => {
+    render(
+      <TestWrapper>
+        <ClubEvents />
+      </TestWrapper>
+    );
+
+    expect(await screen.findByText('Fiction Lovers Gatherings')).toBeInTheDocument();
+    expect(screen.getByText('Event Calendar')).toBeInTheDocument();
+
+    const dayButtons = screen.getAllByRole('button').filter(btn =>
+      btn.className.includes('aspect-square') && !btn.getAttribute('title')
+    );
+    expect(dayButtons.length).toBeGreaterThan(0);
+
+    fireEvent.click(dayButtons[0]);
+
+    expect(await screen.findByText('Selected Date')).toBeInTheDocument();
+
+    const scheduleButtons = screen.getAllByRole('button', { name: /schedule event/i });
+    expect(scheduleButtons.length).toBe(2);
+    fireEvent.click(scheduleButtons[1]);
+
+    expect(screen.getByRole('heading', { name: /schedule gathering/i })).toBeInTheDocument();
+
+    const dateTimeInput = screen.getByLabelText(/date & time/i) as HTMLInputElement;
+    expect(dateTimeInput.value).toContain('T19:00');
+  });
+
+  it('does not show Edit/Delete buttons to a non-creator', async () => {
+    render(
+      <TestWrapper>
+        <ClubEvents />
+      </TestWrapper>
+    );
+
+    const eventCard = await screen.findByText('Reading Dune: Part 1');
+    fireEvent.click(eventCard);
+
+    expect(screen.queryByRole('button', { name: /edit gathering/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /delete gathering/i })).not.toBeInTheDocument();
+  });
+
+  it('shows Edit/Delete buttons to the event creator', async () => {
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { userId: 'u-admin', name: 'Admin Alice' },
+      loading: false,
+    });
+
+    render(
+      <TestWrapper>
+        <ClubEvents />
+      </TestWrapper>
+    );
+
+    const eventCard = await screen.findByText('Reading Dune: Part 1');
+    fireEvent.click(eventCard);
+
+    expect(screen.getByRole('button', { name: /edit gathering/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /delete gathering/i })).toBeInTheDocument();
+  });
+
+  it('allows the creator to edit event details', async () => {
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { userId: 'u-admin', name: 'Admin Alice' },
+      loading: false,
+    });
+
+    const updatedEvent = {
+      ...dummyEvent,
+      title: 'Reading Dune: Updated Title',
+      location: 'New Location Room 4',
+    };
+    (apiService.updateEvent as jest.Mock).mockResolvedValue(updatedEvent);
+
+    render(
+      <TestWrapper>
+        <ClubEvents />
+      </TestWrapper>
+    );
+
+    const eventCard = await screen.findByText('Reading Dune: Part 1');
+    fireEvent.click(eventCard);
+
+    const editBtn = screen.getByRole('button', { name: /edit gathering/i });
+    fireEvent.click(editBtn);
+
+    expect(screen.getByRole('heading', { name: /edit gathering/i })).toBeInTheDocument();
+
+    const titleInput = screen.getByLabelText(/title/i) as HTMLInputElement;
+    const locationInput = screen.getByLabelText(/location/i) as HTMLInputElement;
+    expect(titleInput.value).toBe('Reading Dune: Part 1');
+    
+    fireEvent.change(titleInput, { target: { value: 'Reading Dune: Updated Title' } });
+    fireEvent.change(locationInput, { target: { value: 'New Location Room 4' } });
+
+    const saveBtn = screen.getByRole('button', { name: /save changes/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(apiService.updateEvent).toHaveBeenCalledWith('club-fiction-001', 'evt-100', expect.objectContaining({
+        title: 'Reading Dune: Updated Title',
+        location: 'New Location Room 4',
+      }));
+    });
+  });
+
+  it('allows the creator to delete the event', async () => {
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      user: { userId: 'u-admin', name: 'Admin Alice' },
+      loading: false,
+    });
+
+    (apiService.deleteEvent as jest.Mock).mockResolvedValue({});
+    jest.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(
+      <TestWrapper>
+        <ClubEvents />
+      </TestWrapper>
+    );
+
+    const eventCard = await screen.findByText('Reading Dune: Part 1');
+    fireEvent.click(eventCard);
+
+    const deleteBtn = screen.getByRole('button', { name: /delete gathering/i });
+    fireEvent.click(deleteBtn);
+
+    expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this gathering?');
+
+    await waitFor(() => {
+      expect(apiService.deleteEvent).toHaveBeenCalledWith('club-fiction-001', 'evt-100');
+    });
+
+    expect(screen.queryByText('Back to All Gatherings')).not.toBeInTheDocument();
   });
 });
 

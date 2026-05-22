@@ -1016,6 +1016,21 @@ class ApiService {
     }
     return response.data.data!;
   }
+
+  async updateEvent(clubId: string, eventId: string, updates: Partial<ClubEvent>): Promise<ClubEvent> {
+    const response: AxiosResponse<ApiResponse<ClubEvent>> = await this.api.put(`/clubs/${clubId}/events/${eventId}`, updates);
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to update club event');
+    }
+    return response.data.data!;
+  }
+
+  async deleteEvent(clubId: string, eventId: string): Promise<void> {
+    const response: AxiosResponse<ApiResponse<{ message: string }>> = await this.api.delete(`/clubs/${clubId}/events/${eventId}`);
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to delete club event');
+    }
+  }
 }
 
 export const apiService = new ApiService();

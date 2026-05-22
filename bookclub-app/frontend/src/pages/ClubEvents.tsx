@@ -51,6 +51,10 @@ const ClubEvents: React.FC = () => {
   const [newTasks, setNewTasks] = useState<string[]>([]);
   const [taskInput, setTaskInput] = useState('');
   const [submittingEvent, setSubmittingEvent] = useState(false);
+
+  // Calendar Selection State
+  const [selectedCalDate, setSelectedCalDate] = useState<Date | null>(null);
+  const [editingEvent, setEditingEvent] = useState<ClubEvent | null>(null);
   
   // Chat input
   const [commentInput, setCommentInput] = useState('');
@@ -177,6 +181,8 @@ const ClubEvents: React.FC = () => {
       setEvents(eventsData);
       // Keep selectedEventId null by default so user sees the grid of all upcoming gatherings
       setSelectedEventId(null);
+      setSelectedCalDate(null);
+      setEditingEvent(null);
     } catch (e: any) {
       setError(e.message || 'Failed to load club events');
     } finally {
@@ -275,24 +281,78 @@ const ClubEvents: React.FC = () => {
     setNewTasks(newTasks.filter((_, idx) => idx !== idxToRemove));
   };
 
-  // Handle Create Event Submission
-  const handleCreateEvent = async (e: React.FormEvent) => {
+  const formatToDateTimeLocal = (isoString: string) => {
+    try {
+      const d = new Date(isoString);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    } catch {
+      return '';
+    }
+  };
+
+  const handleOpenEditModal = (event: ClubEvent) => {
+    setEditingEvent(event);
+    setNewTitle(event.title);
+    setNewDescription(event.description || '');
+    setNewLocation(event.location || '');
+    setNewDateTime(formatToDateTimeLocal(event.dateTime));
+    setNewTasks(event.volunteerTasks || []);
+    setShowCreateModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setNewTitle('');
+    setNewDescription('');
+    setNewLocation('');
+    setNewDateTime('');
+    setNewTasks([]);
+    setEditingEvent(null);
+    setShowCreateModal(false);
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!clubId) return;
+    if (!window.confirm('Are you sure you want to delete this gathering?')) return;
+    try {
+      setActionError('');
+      await apiService.deleteEvent(clubId, eventId);
+      setEvents(prev => prev.filter(e => e.eventId !== eventId));
+      setSelectedEventId(null);
+    } catch (e: any) {
+      setActionError(e.message || 'Failed to delete event');
+    }
+  };
+
+  // Handle Create or Edit Event Submission
+  const handleSubmitEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!clubId || !newTitle.trim() || !newDateTime || submittingEvent) return;
 
     try {
       setSubmittingEvent(true);
       setActionError('');
-      const created = await apiService.createEvent(clubId, {
+      const eventData = {
         title: newTitle.trim(),
         description: newDescription.trim(),
         location: newLocation.trim(),
         dateTime: new Date(newDateTime).toISOString(),
         volunteerTasks: newTasks
-      });
-      
-      setEvents(prev => [created, ...prev]);
-      setSelectedEventId(created.eventId);
+      };
+
+      if (editingEvent) {
+        const updated = await apiService.updateEvent(clubId, editingEvent.eventId, eventData);
+        setEvents(prev => prev.map(evt => evt.eventId === editingEvent.eventId ? updated : evt));
+        setEditingEvent(null);
+      } else {
+        const created = await apiService.createEvent(clubId, eventData);
+        setEvents(prev => [created, ...prev]);
+        setSelectedEventId(created.eventId);
+      }
       
       // Reset form
       setNewTitle('');
@@ -302,7 +362,7 @@ const ClubEvents: React.FC = () => {
       setNewTasks([]);
       setShowCreateModal(false);
     } catch (err: any) {
-      setActionError(err.message || 'Failed to create event');
+      setActionError(err.message || 'Failed to save event');
     } finally {
       setSubmittingEvent(false);
     }
@@ -589,7 +649,7 @@ const ClubEvents: React.FC = () => {
                 {/* Weekdays header */}
                 <div className="grid grid-cols-7 gap-1 text-center mb-1">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-                    <div key={d} className="text-[10px] font-black text-gray-405 uppercase tracking-wider py-1">
+                    <div key={d} className="text-[10px] font-black text-gray-450 uppercase tracking-wider py-1">
                       {d.slice(0, 1)}
                     </div>
                   ))}
@@ -608,21 +668,28 @@ const ClubEvents: React.FC = () => {
                     const isToday = day.getFullYear() === today.getFullYear() &&
                                     day.getMonth() === today.getMonth() &&
                                     day.getDate() === today.getDate();
+                    const isSelected = selectedCalDate &&
+                                       day.getFullYear() === selectedCalDate.getFullYear() &&
+                                       day.getMonth() === selectedCalDate.getMonth() &&
+                                       day.getDate() === selectedCalDate.getDate();
 
-                    let cellStyle = "text-gray-700 hover:bg-gray-100";
+                    let cellStyle = "text-gray-700 hover:bg-gray-100 cursor-pointer";
                     if (hasEvents) {
                       cellStyle = "bg-indigo-50 border border-indigo-100 text-indigo-750 font-bold hover:bg-indigo-100 cursor-pointer";
                     }
                     if (isToday) {
                       cellStyle += " ring-2 ring-indigo-550 ring-offset-1";
                     }
+                    if (isSelected) {
+                      cellStyle += " ring-2 ring-indigo-500 bg-indigo-50/50";
+                    }
 
                     return (
                       <button
                         key={day.toISOString()}
                         type="button"
-                        disabled={!hasEvents}
                         onClick={() => {
+                          setSelectedCalDate(day);
                           if (hasEvents) {
                             if (dayEvents.length === 1) {
                               setSelectedEventId(dayEvents[0].eventId);
@@ -646,6 +713,57 @@ const ClubEvents: React.FC = () => {
                   })}
                 </div>
               </div>
+
+              {/* Selected Date Card */}
+              {selectedCalDate && (
+                <div className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm text-left animate-fadeIn">
+                  <h3 className="font-black text-gray-900 tracking-tight text-sm uppercase italic flex items-center gap-2 mb-3 border-b border-gray-100 pb-2">
+                    <ClockIcon className="h-4.5 w-4.5 text-indigo-600" />
+                    Selected Date
+                  </h3>
+                  <p className="text-sm font-bold text-gray-800">
+                    {selectedCalDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                  
+                  {getEventsForDate(selectedCalDate).length > 0 && (
+                    <div className="mt-3 space-y-2">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Scheduled Gatherings:</p>
+                      <div className="space-y-1.5">
+                        {getEventsForDate(selectedCalDate).map(evt => (
+                          <button
+                            key={evt.eventId}
+                            onClick={() => {
+                              setSelectedEventId(evt.eventId);
+                              setActionError('');
+                              setReminderStatus(null);
+                            }}
+                            className="block w-full text-left text-xs font-bold text-indigo-650 hover:text-indigo-850 hover:underline truncate"
+                          >
+                            ⏰ {formatEventTime(evt.dateTime)} - {evt.title}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {club && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const year = selectedCalDate.getFullYear();
+                        const month = String(selectedCalDate.getMonth() + 1).padStart(2, '0');
+                        const day = String(selectedCalDate.getDate()).padStart(2, '0');
+                        setNewDateTime(`${year}-${month}-${day}T19:00`);
+                        setShowCreateModal(true);
+                      }}
+                      className="w-full mt-4 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold uppercase tracking-wider transition-colors shadow-sm cursor-pointer"
+                    >
+                      <PlusIcon className="h-3.5 w-3.5" />
+                      Schedule Event
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         ) : selectedEvent ? (
@@ -699,18 +817,35 @@ const ClubEvents: React.FC = () => {
                       </div>
                     </div>
                     
-                    {/* Reminder Button */}
-                    {isAuthenticated && (selectedEvent.createdBy === user?.userId || isCreatorOrAdmin) && (
-                      <div className="self-start sm:self-auto">
+                    {/* Admin actions: Edit & Delete & Reminder */}
+                    <div className="self-start sm:self-auto flex flex-wrap items-center gap-2">
+                      {isAuthenticated && (selectedEvent.createdBy === user?.userId || isCreatorOrAdmin) && (
                         <button
                           onClick={handleSendReminder}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-gray-150 hover:bg-gray-200 text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 transition-colors"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-gray-150 hover:bg-gray-200 text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 transition-colors cursor-pointer"
                         >
-                          <BellIcon className="h-4 w-4 text-indigo-600" />
+                          <BellIcon className="h-4 w-4 text-indigo-650" />
                           Broadcast Reminder
                         </button>
-                      </div>
-                    )}
+                      )}
+
+                      {isAuthenticated && selectedEvent.createdBy === user?.userId && (
+                        <>
+                          <button
+                            onClick={() => handleOpenEditModal(selectedEvent)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-750 text-xs font-bold uppercase tracking-wider border border-indigo-200 transition-colors cursor-pointer"
+                          >
+                            Edit Gathering
+                          </button>
+                          <button
+                            onClick={() => handleDeleteEvent(selectedEvent.eventId)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-50 hover:bg-red-105 text-red-750 text-xs font-bold uppercase tracking-wider border border-red-200 transition-colors cursor-pointer"
+                          >
+                            Delete Gathering
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* Description */}
@@ -935,10 +1070,10 @@ const ClubEvents: React.FC = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-150">
               <h3 className="text-lg font-black text-gray-900 tracking-tight uppercase italic flex items-center gap-2">
                 <CalendarIcon className="h-5 w-5 text-indigo-600" />
-                Schedule Gathering
+                {editingEvent ? 'Edit Gathering' : 'Schedule Gathering'}
               </h3>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={handleCloseModal}
                 className="text-gray-400 hover:text-gray-650 transition-colors p-1 rounded-lg hover:bg-gray-100"
               >
                 <XMarkIcon className="h-5.5 w-5.5" />
@@ -946,14 +1081,15 @@ const ClubEvents: React.FC = () => {
             </div>
 
             {/* Modal Form body */}
-            <form onSubmit={handleCreateEvent} className="p-6 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+            <form onSubmit={handleSubmitEvent} className="p-6 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
               
               {/* Event Title */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label htmlFor="event-title" className="text-xs font-bold uppercase tracking-wider text-gray-400">
                   Title
                 </label>
                 <input
+                  id="event-title"
                   type="text"
                   required
                   value={newTitle}
@@ -965,10 +1101,11 @@ const ClubEvents: React.FC = () => {
 
               {/* Location */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label htmlFor="event-location" className="text-xs font-bold uppercase tracking-wider text-gray-400">
                   Location
                 </label>
                 <input
+                  id="event-location"
                   type="text"
                   value={newLocation}
                   onChange={(e) => setNewLocation(e.target.value)}
@@ -979,10 +1116,11 @@ const ClubEvents: React.FC = () => {
 
               {/* Date & Time */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label htmlFor="event-datetime" className="text-xs font-bold uppercase tracking-wider text-gray-400">
                   Date & Time
                 </label>
                 <input
+                  id="event-datetime"
                   type="datetime-local"
                   required
                   value={newDateTime}
@@ -993,10 +1131,11 @@ const ClubEvents: React.FC = () => {
 
               {/* Description */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label htmlFor="event-description" className="text-xs font-bold uppercase tracking-wider text-gray-400">
                   Description
                 </label>
                 <textarea
+                  id="event-description"
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
                   placeholder="Add details, link to video call, or directions to the meet spot..."
@@ -1007,11 +1146,12 @@ const ClubEvents: React.FC = () => {
 
               {/* Volunteer Tasks */}
               <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label htmlFor="event-task-input" className="text-xs font-bold uppercase tracking-wider text-gray-400">
                   Volunteer Tasks
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id="event-task-input"
                     type="text"
                     value={taskInput}
                     onChange={(e) => setTaskInput(e.target.value)}
@@ -1059,7 +1199,7 @@ const ClubEvents: React.FC = () => {
               <div className="flex gap-3 pt-4 border-t border-gray-150">
                 <button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={handleCloseModal}
                   className="flex-1 py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs uppercase tracking-wider transition-colors text-center"
                 >
                   Cancel
@@ -1069,7 +1209,7 @@ const ClubEvents: React.FC = () => {
                   disabled={submittingEvent}
                   className="flex-1 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all disabled:opacity-50 text-center"
                 >
-                  {submittingEvent ? 'Scheduling...' : 'Schedule Gathering'}
+                  {submittingEvent ? 'Saving...' : (editingEvent ? 'Save Changes' : 'Schedule Gathering')}
                 </button>
               </div>
             </form>

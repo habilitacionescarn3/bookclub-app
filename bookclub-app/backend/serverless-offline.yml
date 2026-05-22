@@ -704,3 +704,37 @@ functions:
               - X-Api-Key
               - X-Amz-Security-Token
             allowCredentials: true
+
+  updateEvent:
+    handler: src/handlers/events/update.handler
+    events:
+      - http:
+          method: PUT
+          path: /clubs/{clubId}/events/{eventId}
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+
+  deleteEvent:
+    handler: src/handlers/events/delete.handler
+    events:
+      - http:
+          method: DELETE
+          path: /clubs/{clubId}/events/{eventId}
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true

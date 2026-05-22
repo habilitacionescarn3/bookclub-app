@@ -1266,6 +1266,47 @@ functions:
             authorizerId:
               Ref: ApiGatewayAuthorizer
 
+  updateEvent:
+    handler: src/handlers/events/update.handler
+    events:
+      - http:
+          method: PUT
+          path: /clubs/{clubId}/events/{eventId}
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
+  deleteEvent:
+    handler: src/handlers/events/delete.handler
+    events:
+      - http:
+          method: DELETE
+          path: /clubs/{clubId}/events/{eventId}
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
+
   rsvpEvent:
     handler: src/handlers/events/rsvp.handler
     events:
