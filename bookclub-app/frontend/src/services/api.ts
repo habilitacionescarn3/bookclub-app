@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { ApiResponse, Book, BookListResponse, User, UploadUrlResponse, ProfileUpdateData, BookMetadata, BookClub, BookClubListResponse, ExtractedMetadata, DMConversation, DMConversationList, DMMessage, DMMessageList, LostFoundItem, LostFoundListResponse, LostFoundStatus, LostFoundItemType } from '../types';
+import { ApiResponse, Book, BookListResponse, User, UploadUrlResponse, ProfileUpdateData, BookMetadata, BookClub, BookClubListResponse, ExtractedMetadata, DMConversation, DMConversationList, DMMessage, DMMessageList, LostFoundItem, LostFoundListResponse, LostFoundStatus, LostFoundItemType, ClubEvent } from '../types';
 import { config } from '../config';
 import { getCookie, setCookie, getBaseDomain } from '../utils/cookies';
 
@@ -960,6 +960,61 @@ class ApiService {
   async deleteLostFoundItem(lostFoundId: string): Promise<void> {
     const response: AxiosResponse<ApiResponse<{ deleted: boolean }>> = await this.api.delete(`/lost-found/${lostFoundId}`);
     if (!response.data.success) throw new Error(response.data.error?.message || 'Failed to delete item');
+  }
+
+  // Club Events methods
+  async listEvents(clubId: string): Promise<ClubEvent[]> {
+    const response: AxiosResponse<ApiResponse<ClubEvent[]>> = await this.api.get(`/clubs/${clubId}/events`);
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to list club events');
+    }
+    return response.data.data!;
+  }
+
+  async createEvent(clubId: string, eventData: {
+    title: string;
+    description?: string;
+    location?: string;
+    dateTime: string;
+    volunteerTasks?: string[];
+  }): Promise<ClubEvent> {
+    const response: AxiosResponse<ApiResponse<ClubEvent>> = await this.api.post(`/clubs/${clubId}/events`, eventData);
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to create club event');
+    }
+    return response.data.data!;
+  }
+
+  async rsvpEvent(clubId: string, eventId: string, status: 'going' | 'interested' | 'not_going'): Promise<ClubEvent> {
+    const response: AxiosResponse<ApiResponse<ClubEvent>> = await this.api.post(`/clubs/${clubId}/events/${eventId}/rsvp`, { status });
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to RSVP to event');
+    }
+    return response.data.data!;
+  }
+
+  async volunteerEvent(clubId: string, eventId: string, task: string | null): Promise<ClubEvent> {
+    const response: AxiosResponse<ApiResponse<ClubEvent>> = await this.api.post(`/clubs/${clubId}/events/${eventId}/volunteer`, { task });
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to volunteer for task');
+    }
+    return response.data.data!;
+  }
+
+  async commentEvent(clubId: string, eventId: string, content: string): Promise<ClubEvent> {
+    const response: AxiosResponse<ApiResponse<ClubEvent>> = await this.api.post(`/clubs/${clubId}/events/${eventId}/comments`, { content });
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to post comment');
+    }
+    return response.data.data!;
+  }
+
+  async remindEvent(clubId: string, eventId: string): Promise<{ message: string; sentCount: number }> {
+    const response: AxiosResponse<ApiResponse<{ message: string; sentCount: number }>> = await this.api.post(`/clubs/${clubId}/events/${eventId}/remind`);
+    if (!response.data.success) {
+      throw new Error(response.data.error?.message || 'Failed to send event reminder');
+    }
+    return response.data.data!;
   }
 }
 

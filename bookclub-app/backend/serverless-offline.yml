@@ -601,3 +601,106 @@ functions:
           method: POST
           path: /contact
           cors: true
+
+  # Club Events handlers
+  listEvents:
+    handler: src/handlers/events/list.handler
+    events:
+      - http:
+          method: GET
+          path: /clubs/{clubId}/events
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+
+  createEvent:
+    handler: src/handlers/events/create.handler
+    events:
+      - http:
+          method: POST
+          path: /clubs/{clubId}/events
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+
+  rsvpEvent:
+    handler: src/handlers/events/rsvp.handler
+    events:
+      - http:
+          method: POST
+          path: /clubs/{clubId}/events/{eventId}/rsvp
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+
+  volunteerEvent:
+    handler: src/handlers/events/volunteer.handler
+    events:
+      - http:
+          method: POST
+          path: /clubs/{clubId}/events/{eventId}/volunteer
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+
+  commentEvent:
+    handler: src/handlers/events/comment.handler
+    events:
+      - http:
+          method: POST
+          path: /clubs/{clubId}/events/{eventId}/comments
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true
+
+  remindEvent:
+    handler: src/handlers/events/remind.handler
+    events:
+      - http:
+          method: POST
+          path: /clubs/{clubId}/events/{eventId}/remind
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+            allowCredentials: true

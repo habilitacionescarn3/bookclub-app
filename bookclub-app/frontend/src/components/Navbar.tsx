@@ -79,6 +79,13 @@ const Navbar: React.FC = () => {
     || location.pathname.startsWith('/library/lost-found/')
     || location.pathname === '/my-lost-and-found';
 
+  const isEventsActive = location.pathname === '/events'
+    || location.pathname.startsWith('/events/')
+    || location.pathname.endsWith('/events')
+    || location.pathname.includes('/events/');
+
+  const isClubsActive = isActive('/clubs') && !isEventsActive;
+
   return (
     <>
       <nav className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-30">
@@ -132,10 +139,21 @@ const Navbar: React.FC = () => {
                 <Link
                   to="/clubs"
                   className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive('/clubs') ? 'text-indigo-700 bg-indigo-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                    isClubsActive ? 'text-indigo-700 bg-indigo-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
                   }`}
                 >
                   Clubs
+                </Link>
+              )}
+
+              {hasClubAccess && (
+                <Link
+                  to="/events"
+                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    isEventsActive ? 'text-indigo-700 bg-indigo-50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                  }`}
+                >
+                  Events
                 </Link>
               )}
 

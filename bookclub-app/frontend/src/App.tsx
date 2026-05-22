@@ -37,6 +37,7 @@ import ClubRequests from './pages/ClubRequests';
 import ClubMembers from './pages/ClubMembers';
 import ClubBooks from './pages/ClubBooks';
 import ClubJoinQr from './pages/ClubJoinQr';
+import ClubEvents from './pages/ClubEvents';
 import LostFoundHub from './pages/LostFoundHub';
 import LostFoundDetails from './pages/LostFoundDetails';
 import MyLostFound from './pages/MyLostFound';
@@ -206,6 +207,22 @@ function App() {
                   element={
                     <ClubProtectedRoute>
                       <ClubBooks />
+                    </ClubProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/events"
+                  element={
+                    <ClubProtectedRoute>
+                      <ClubEvents />
+                    </ClubProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/clubs/:slug/events"
+                  element={
+                    <ClubProtectedRoute>
+                      <ClubEvents />
                     </ClubProtectedRoute>
                   }
                 />

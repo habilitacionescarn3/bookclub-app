@@ -4,7 +4,7 @@ import { Book, BookClub } from '../types';
 import { apiService } from '../services/api';
 import PublicBookCard from '../components/PublicBookCard';
 import { useAuth } from '../contexts/AuthContext';
-import { ArchiveBoxIcon, UserPlusIcon, UsersIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
+import { ArchiveBoxIcon, UserPlusIcon, UsersIcon, EnvelopeIcon, CalendarIcon } from '@heroicons/react/24/outline';
 import InviteByEmailModal from '../components/InviteByEmailModal';
 
 const ClubBooks: React.FC = () => {
@@ -203,13 +203,22 @@ const ClubBooks: React.FC = () => {
               )}
 
               {club && (club.isMember || club.userRole === 'admin') && (
-                <button
-                  onClick={() => navigate(`/clubs/${clubId}/members`)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
-                >
-                  <UsersIcon className="h-4 w-4 text-gray-400" />
-                  {club.userRole === 'admin' ? 'Manage Members' : 'View Members'}
-                </button>
+                <>
+                  <button
+                    onClick={() => navigate(`/clubs/${clubId}/members`)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    <UsersIcon className="h-4 w-4 text-gray-400" />
+                    {club.userRole === 'admin' ? 'Manage Members' : 'View Members'}
+                  </button>
+                  <button
+                    onClick={() => navigate(`/clubs/${slug}/events`)}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
+                  >
+                    <CalendarIcon className="h-4 w-4 text-gray-400" />
+                    Events
+                  </button>
+                </>
               )}
 
               {club && (club.userRole === 'admin' || club.createdBy === user?.userId) && (

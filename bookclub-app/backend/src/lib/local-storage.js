@@ -14,6 +14,7 @@ const CLUBS_FILE = path.join(STORAGE_DIR, 'clubs.json');
 const CLUB_MEMBERS_FILE = path.join(STORAGE_DIR, 'club-members.json');
 const LOST_FOUND_FILE = path.join(STORAGE_DIR, 'lost-found.json');
 const CLUB_EMAIL_INVITES_FILE = path.join(STORAGE_DIR, 'club-email-invites.json');
+const EVENTS_FILE = path.join(STORAGE_DIR, 'events.json');
 
 if (OFFLINE) {
   // Ensure storage directory exists (local only)
@@ -541,6 +542,74 @@ class LocalStorage {
       invites[key] = { ...invites[key], status: 'accepted', acceptedAt: new Date().toISOString() };
       this.saveEmailInvites(invites);
     }
+  }
+
+  // Event operations
+  static loadEvents() {
+    if (!OFFLINE) return {};
+    try {
+      if (fs.existsSync(EVENTS_FILE)) {
+        return JSON.parse(fs.readFileSync(EVENTS_FILE, 'utf8'));
+      }
+    } catch (error) {
+      console.error('[LocalStorage] Error loading events:', error);
+    }
+    return {};
+  }
+
+  static saveEvents(events) {
+    if (!OFFLINE) return;
+    try {
+      fs.writeFileSync(EVENTS_FILE, JSON.stringify(events, null, 2));
+    } catch (error) {
+      console.error('[LocalStorage] Error saving events:', error);
+    }
+  }
+
+  static async createEvent(event) {
+    if (!OFFLINE) return event;
+    const events = this.loadEvents();
+    events[event.eventId] = event;
+    this.saveEvents(events);
+    return event;
+  }
+
+  static async getEvent(eventId) {
+    if (!OFFLINE) return null;
+    const events = this.loadEvents();
+    return events[eventId] || null;
+  }
+
+  static async listEventsByClub(clubId) {
+    if (!OFFLINE) return [];
+    const events = this.loadEvents();
+    return Object.values(events)
+      .filter(e => e.clubId === clubId)
+      .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime)); // Chronological order
+  }
+
+  static async updateEvent(eventId, updates) {
+    if (!OFFLINE) return null;
+    const events = this.loadEvents();
+    const event = events[eventId];
+    if (event) {
+      const updated = { ...event, ...updates, updatedAt: new Date().toISOString() };
+      events[eventId] = updated;
+      this.saveEvents(events);
+      return updated;
+    }
+    return null;
+  }
+
+  static async deleteEvent(eventId) {
+    if (!OFFLINE) return false;
+    const events = this.loadEvents();
+    if (events[eventId]) {
+      delete events[eventId];
+      this.saveEvents(events);
+      return true;
+    }
+    return false;
   }
 }
 

@@ -447,6 +447,10 @@ class BookClub {
     return result !== null && result.status === 'active';
   }
 
+  static async isClubMember(clubId, userId) {
+    return this.isMember(clubId, userId);
+  }
+
   static async getSharedClubIds(userAId, userBId) {
     const clubsA = await this.getUserClubs(userAId);
     const clubsB = await this.getUserClubs(userBId);

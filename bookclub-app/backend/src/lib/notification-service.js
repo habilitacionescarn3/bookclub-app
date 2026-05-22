@@ -68,6 +68,31 @@ function renderTemplate(templateId, templateData) {
       const html = `<p><strong>${inviterName}</strong> has invited you to join the book club <strong>${clubName}</strong> on ${brand}!</p>\n<p>To join, <a href="${joinUrl}">click here to open the app</a>. You will be joined automatically once you log in or sign up with this email address.</p>\n<p>Happy reading!</p>`;
       return { subject, text, html };
     }
+    case 'event_reminder': {
+      const { eventTitle = 'An event', clubName = 'a book club', dateTime = '', description = '', eventUrl = '' } = templateData || {};
+      const subject = `Reminder: "${eventTitle}" in ${clubName}`;
+      // Basic formatting of the date-time string
+      let formattedDate = dateTime;
+      try {
+        formattedDate = new Date(dateTime).toLocaleString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZoneName: 'short'
+        });
+      } catch (e) {
+        // Fallback to raw string if parsing fails
+      }
+      const text = `This is a reminder for the upcoming event "${eventTitle}" in "${clubName}"!\n\nWhen: ${formattedDate}\n\nDescription: ${description}\n\nView details: ${eventUrl}`;
+      const html = `<p>This is a reminder for the upcoming event <strong>${eventTitle}</strong> in <strong>${clubName}</strong>!</p>
+<p><strong>When:</strong> ${formattedDate}</p>
+${description ? `<p><strong>Description:</strong> ${description}</p>` : ''}
+<p><a href="${eventUrl}">View event details</a></p>`;
+      return { subject, text, html };
+    }
     default: {
       const brand = process.env.BRAND_NAME || 'BookClub';
       const subject = `${brand} notification`;
