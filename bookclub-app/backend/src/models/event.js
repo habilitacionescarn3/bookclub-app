@@ -51,10 +51,9 @@ class Event {
     const start = new Date(startDate);
     const max = new Date(maxDate);
     
-    // Limit to 6 months from start
-    const sixMonthsFromStart = new Date(start);
-    sixMonthsFromStart.setMonth(sixMonthsFromStart.getMonth() + 6);
-    const effectiveMax = max < sixMonthsFromStart ? max : sixMonthsFromStart;
+    // Limit to 26 weeks from start
+    const twentySixWeeksFromStart = new Date(start.getTime() + 26 * 7 * 24 * 60 * 60 * 1000);
+    const effectiveMax = max < twentySixWeeksFromStart ? max : twentySixWeeksFromStart;
     
     let current = new Date(start);
     

@@ -426,10 +426,15 @@ describe('ClubEvents Page Component', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(apiService.updateEvent).toHaveBeenCalledWith('club-fiction-001', 'evt-100', expect.objectContaining({
-        title: 'Reading Dune: Updated Title',
-        location: 'New Location Room 4',
-      }));
+      expect(apiService.updateEvent).toHaveBeenCalledWith(
+        'club-fiction-001',
+        'evt-100',
+        expect.objectContaining({
+          title: 'Reading Dune: Updated Title',
+          location: 'New Location Room 4',
+        }),
+        false
+      );
     });
   });
 
@@ -458,7 +463,7 @@ describe('ClubEvents Page Component', () => {
     expect(window.confirm).toHaveBeenCalledWith('Are you sure you want to delete this gathering?');
 
     await waitFor(() => {
-      expect(apiService.deleteEvent).toHaveBeenCalledWith('club-fiction-001', 'evt-100');
+      expect(apiService.deleteEvent).toHaveBeenCalledWith('club-fiction-001', 'evt-100', false);
     });
 
     expect(screen.queryByText('Back to All Gatherings')).not.toBeInTheDocument();

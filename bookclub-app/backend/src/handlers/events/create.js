@@ -25,11 +25,10 @@ function validateRecurrence(data) {
     
     const startDate = new Date(data.dateTime);
     const endDate = new Date(data.recurrenceEndDate);
-    const maxDate = new Date(startDate);
-    maxDate.setMonth(maxDate.getMonth() + 6);
+    const maxDate = new Date(startDate.getTime() + 26 * 7 * 24 * 60 * 60 * 1000);
     
     if (endDate > maxDate) {
-      return 'Recurring events can only be scheduled up to 6 months in advance';
+      return 'Recurring events can only be scheduled up to 26 weeks in advance';
     }
     
     if (endDate <= startDate) {

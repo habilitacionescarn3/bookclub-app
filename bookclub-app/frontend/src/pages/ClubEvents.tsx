@@ -1219,7 +1219,7 @@ const ClubEvents: React.FC = () => {
                   {recurrencePattern !== 'none' && (
                     <div className="space-y-1.5">
                       <label htmlFor="event-recurrence-end" className="text-xs font-bold uppercase tracking-wider text-indigo-600">
-                        Repeat Until (Max 6 months)
+                        Repeat Until (Max 26 weeks)
                       </label>
                       <input
                         id="event-recurrence-end"
@@ -1231,13 +1231,13 @@ const ClubEvents: React.FC = () => {
                         max={(() => {
                           if (!newDateTime) return undefined;
                           const maxDate = new Date(newDateTime);
-                          maxDate.setMonth(maxDate.getMonth() + 6);
+                          maxDate.setDate(maxDate.getDate() + 26 * 7);
                           return maxDate.toISOString().split('T')[0];
                         })()}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 bg-white"
                       />
                       <p className="text-xs text-gray-500">
-                        Events will be created up to this date (maximum 6 months from start).
+                        Events will be created up to this date (maximum 26 weeks from start).
                       </p>
                     </div>
                   )}
