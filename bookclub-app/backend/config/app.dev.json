@@ -9,5 +9,7 @@
   "frontend": {
     "domain": "dev.townwink.com",
     "bucketName": "bookclub-app-dev-frontend"
-  }
+  },
+  "BRAND": "BookClub",
+  "NOTIFY_FROM_EMAIL": "notify@dev.townwink.com"
 }

@@ -60,6 +60,14 @@ function renderTemplate(templateId, templateData) {
       const html = `<p>You have a new message from <strong>${fromName}</strong> in ${brand}.</p><p>${snippet}</p><p><a href="${conversationUrl}">Open conversation</a></p>`;
       return { subject, text, html };
     }
+    case 'club_invite': {
+      const { inviterName = 'A user', clubName = 'a book club', inviteCode = '', joinUrl = '' } = templateData || {};
+      const brand = process.env.BRAND_NAME || 'BookClub';
+      const subject = `You are invited to join the book club "${clubName}"`;
+      const text = `${inviterName} has invited you to join the book club "${clubName}" on ${brand}!\n\nTo join, go to ${joinUrl} and enter the invite code: ${inviteCode}\n\nHappy reading!`;
+      const html = `<p><strong>${inviterName}</strong> has invited you to join the book club <strong>${clubName}</strong> on ${brand}!</p>\n<p>To join, <a href="${joinUrl}">click here to open the app</a> and enter the invite code: <strong>${inviteCode}</strong></p>\n<p>Happy reading!</p>`;
+      return { subject, text, html };
+    }
     default: {
       const brand = process.env.BRAND_NAME || 'BookClub';
       const subject = `${brand} notification`;
@@ -154,6 +162,19 @@ async function sendAdminNewUserNotification(user) {
   return { sent: true };
 }
 
+async function sendClubInvite({ to, inviterName, clubName, inviteCode }) {
+  const baseUrl = process.env.SITE_BASE_URL || 'http://localhost:3000';
+  const joinUrl = `${baseUrl.replace(/\/$/, '')}/clubs`;
+  const { subject, text, html } = renderTemplate('club_invite', {
+    inviterName,
+    clubName,
+    inviteCode,
+    joinUrl,
+  });
+  await sendEmail(to, subject, text, html);
+  return { sent: true };
+}
+
 module.exports = {
   DEFAULT_PREFS,
   getUserPrefs,
@@ -161,4 +182,5 @@ module.exports = {
   sendEmail,
   sendEmailIfEnabled,
   sendAdminNewUserNotification,
+  sendClubInvite,
 };

@@ -9,5 +9,7 @@
   "frontend": {
     "domain": "localhost:3000",
     "bucketName": ""
-  }
+  },
+  "BRAND": "BookClub",
+  "NOTIFY_FROM_EMAIL": "notify@localhost"
 }

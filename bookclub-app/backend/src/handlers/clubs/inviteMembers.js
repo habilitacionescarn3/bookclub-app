@@ -46,6 +46,29 @@ exports.handler = async (event) => {
 
     const invited = await BookClub.addEmailInvites(clubId, valid, userId);
 
+    // Dispatch email notifications in parallel
+    try {
+      const { sendClubInvite } = require('../../lib/notification-service');
+      const inviter = await User.getById(userId);
+      const inviterName = inviter?.name || 'A book club member';
+
+      const emailPromises = valid.map(async (email) => {
+        try {
+          await sendClubInvite({
+            to: email,
+            inviterName,
+            clubName: club.name,
+            inviteCode: club.inviteCode,
+          });
+        } catch (emailErr) {
+          console.error(`[clubs][inviteMembers] Failed to send email to ${email}:`, emailErr);
+        }
+      });
+      await Promise.all(emailPromises);
+    } catch (inviteErr) {
+      console.error('[clubs][inviteMembers] Failed to dispatch invitation emails:', inviteErr);
+    }
+
     return success({ invited: invited.length, invalid, emails: invited }, 200);
   } catch (err) {
     console.error('[clubs][inviteMembers] error:', err);
