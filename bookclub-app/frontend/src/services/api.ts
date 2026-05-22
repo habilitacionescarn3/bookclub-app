@@ -977,8 +977,10 @@ class ApiService {
     location?: string;
     dateTime: string;
     volunteerTasks?: string[];
-  }): Promise<ClubEvent> {
-    const response: AxiosResponse<ApiResponse<ClubEvent>> = await this.api.post(`/clubs/${clubId}/events`, eventData);
+    recurrencePattern?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+    recurrenceEndDate?: string;
+  }): Promise<{ events: ClubEvent[]; count: number; parentEventId: string }> {
+    const response: AxiosResponse<ApiResponse<{ events: ClubEvent[]; count: number; parentEventId: string }>> = await this.api.post(`/clubs/${clubId}/events`, eventData);
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Failed to create club event');
     }
@@ -1017,19 +1019,26 @@ class ApiService {
     return response.data.data!;
   }
 
-  async updateEvent(clubId: string, eventId: string, updates: Partial<ClubEvent>): Promise<ClubEvent> {
-    const response: AxiosResponse<ApiResponse<ClubEvent>> = await this.api.put(`/clubs/${clubId}/events/${eventId}`, updates);
+  async updateEvent(clubId: string, eventId: string, updates: Partial<ClubEvent>, updateSeries?: boolean): Promise<ClubEvent | { events: ClubEvent[]; seriesUpdated: boolean; updatedCount: number }> {
+    const url = updateSeries 
+      ? `/clubs/${clubId}/events/${eventId}?updateSeries=true`
+      : `/clubs/${clubId}/events/${eventId}`;
+    const response: AxiosResponse<ApiResponse<any>> = await this.api.put(url, updates);
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Failed to update club event');
     }
     return response.data.data!;
   }
 
-  async deleteEvent(clubId: string, eventId: string): Promise<void> {
-    const response: AxiosResponse<ApiResponse<{ message: string }>> = await this.api.delete(`/clubs/${clubId}/events/${eventId}`);
+  async deleteEvent(clubId: string, eventId: string, deleteSeries?: boolean): Promise<{ message: string; seriesDeleted?: boolean }> {
+    const url = deleteSeries
+      ? `/clubs/${clubId}/events/${eventId}?deleteSeries=true`
+      : `/clubs/${clubId}/events/${eventId}`;
+    const response: AxiosResponse<ApiResponse<{ message: string; seriesDeleted?: boolean }>> = await this.api.delete(url);
     if (!response.data.success) {
       throw new Error(response.data.error?.message || 'Failed to delete club event');
     }
+    return response.data.data!;
   }
 }
 

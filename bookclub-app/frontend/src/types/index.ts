@@ -252,7 +252,14 @@ export interface ClubEvent {
   volunteers: Record<string, { name: string; task: string; signedUpAt: string }>;
   rsvps: Record<string, { name: string; status: 'going' | 'interested' | 'not_going'; updatedAt: string }>;
   discussions: Array<{ commentId: string; userId: string; name: string; content: string; createdAt: string }>;
+  // Recurrence fields
+  parentEventId?: string;
+  recurrencePattern?: 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
+  recurrenceEndDate?: string;
+  isRecurringInstance?: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+export type RecurrencePattern = 'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly';
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { apiService } from '../services/api';
-import { BookClub, ClubEvent } from '../types';
+import { BookClub, ClubEvent, RecurrencePattern } from '../types';
 import SEO from '../components/SEO';
 import {
   CalendarIcon,
@@ -51,6 +51,13 @@ const ClubEvents: React.FC = () => {
   const [newTasks, setNewTasks] = useState<string[]>([]);
   const [taskInput, setTaskInput] = useState('');
   const [submittingEvent, setSubmittingEvent] = useState(false);
+
+  // Recurrence State
+  const [recurrencePattern, setRecurrencePattern] = useState<'none' | 'daily' | 'weekly' | 'biweekly' | 'monthly'>('none');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
+  const [showDeleteSeriesConfirm, setShowDeleteSeriesConfirm] = useState(false);
+  const [showUpdateSeriesConfirm, setShowUpdateSeriesConfirm] = useState(false);
+  const [pendingDeleteEventId, setPendingDeleteEventId] = useState<string | null>(null);
 
   // Calendar Selection State
   const [selectedCalDate, setSelectedCalDate] = useState<Date | null>(null);
@@ -302,6 +309,9 @@ const ClubEvents: React.FC = () => {
     setNewLocation(event.location || '');
     setNewDateTime(formatToDateTimeLocal(event.dateTime));
     setNewTasks(event.volunteerTasks || []);
+    // Load recurrence info if editing a series event
+    setRecurrencePattern(event.recurrencePattern || 'none');
+    setRecurrenceEndDate(event.recurrenceEndDate || '');
     setShowCreateModal(true);
   };
 
@@ -311,26 +321,57 @@ const ClubEvents: React.FC = () => {
     setNewLocation('');
     setNewDateTime('');
     setNewTasks([]);
+    setRecurrencePattern('none');
+    setRecurrenceEndDate('');
+    setShowUpdateSeriesConfirm(false);
     setEditingEvent(null);
     setShowCreateModal(false);
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
+  const handleDeleteEvent = async (eventId: string, deleteSeries = false, skipConfirm = false) => {
     if (!clubId) return;
-    if (!window.confirm('Are you sure you want to delete this gathering?')) return;
+    
+    const eventToDelete = events.find(e => e.eventId === eventId);
+    const isSeriesEvent = eventToDelete && (eventToDelete.parentEventId || (eventToDelete.recurrencePattern && eventToDelete.recurrencePattern !== 'none'));
+    
+    // If deleting a series event and not already confirmed, show confirmation modal
+    if (isSeriesEvent && !deleteSeries && !showDeleteSeriesConfirm && !skipConfirm) {
+      setPendingDeleteEventId(eventId);
+      setShowDeleteSeriesConfirm(true);
+      return;
+    }
+    
+    // For non-series events, show simple confirm
+    if (!isSeriesEvent && !skipConfirm) {
+      const confirmed = window.confirm('Are you sure you want to delete this gathering?');
+      if (!confirmed) return;
+    }
+    
     try {
       setActionError('');
-      await apiService.deleteEvent(clubId, eventId);
-      setEvents(prev => prev.filter(e => e.eventId !== eventId));
+      const result = await apiService.deleteEvent(clubId, eventId, deleteSeries);
+      
+      if (result.seriesDeleted) {
+        // Refresh all events after series deletion
+        const eventsData = await apiService.listEvents(clubId);
+        setEvents(eventsData);
+      } else {
+        // Single event deleted
+        setEvents(prev => prev.filter(e => e.eventId !== eventId));
+      }
+      
       setSelectedEventId(null);
+      setPendingDeleteEventId(null);
+      setShowDeleteSeriesConfirm(false);
     } catch (e: any) {
       setActionError(e.message || 'Failed to delete event');
     }
   };
 
   // Handle Create or Edit Event Submission
-  const handleSubmitEvent = async (e: React.FormEvent) => {
+  const handleSubmitEvent = async (e: React.FormEvent | React.MouseEvent, updateSeries = false) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!clubId || !newTitle.trim() || !newDateTime || submittingEvent) return;
 
     try {
@@ -341,17 +382,39 @@ const ClubEvents: React.FC = () => {
         description: newDescription.trim(),
         location: newLocation.trim(),
         dateTime: new Date(newDateTime).toISOString(),
-        volunteerTasks: newTasks
+        volunteerTasks: newTasks,
+        recurrencePattern: recurrencePattern !== 'none' ? recurrencePattern : undefined,
+        recurrenceEndDate: recurrencePattern !== 'none' && recurrenceEndDate ? recurrenceEndDate : undefined,
       };
 
       if (editingEvent) {
-        const updated = await apiService.updateEvent(clubId, editingEvent.eventId, eventData);
-        setEvents(prev => prev.map(evt => evt.eventId === editingEvent.eventId ? updated : evt));
+        // Check if this is part of a series
+        const isSeriesEvent = editingEvent.parentEventId || (editingEvent.recurrencePattern && editingEvent.recurrencePattern !== 'none');
+        
+        if (isSeriesEvent && showUpdateSeriesConfirm && !updateSeries) {
+          // Show series update confirmation dialog
+          setShowUpdateSeriesConfirm(true);
+          setSubmittingEvent(false);
+          return;
+        }
+        
+        const result = await apiService.updateEvent(clubId, editingEvent.eventId, eventData, updateSeries);
+        
+        if ('seriesUpdated' in result && result.seriesUpdated) {
+          // Series was updated - refresh all events
+          const eventsData = await apiService.listEvents(clubId);
+          setEvents(eventsData);
+        } else {
+          // Single event updated
+          setEvents(prev => prev.map(evt => evt.eventId === editingEvent.eventId ? (result as ClubEvent) : evt));
+        }
         setEditingEvent(null);
+        setShowUpdateSeriesConfirm(false);
       } else {
-        const created = await apiService.createEvent(clubId, eventData);
-        setEvents(prev => [created, ...prev]);
-        setSelectedEventId(created.eventId);
+        const result = await apiService.createEvent(clubId, eventData);
+        // Add all created events to the list
+        setEvents(prev => [...result.events, ...prev]);
+        setSelectedEventId(result.parentEventId);
       }
       
       // Reset form
@@ -360,6 +423,8 @@ const ClubEvents: React.FC = () => {
       setNewLocation('');
       setNewDateTime('');
       setNewTasks([]);
+      setRecurrencePattern('none');
+      setRecurrenceEndDate('');
       setShowCreateModal(false);
     } catch (err: any) {
       setActionError(err.message || 'Failed to save event');
@@ -1081,7 +1146,7 @@ const ClubEvents: React.FC = () => {
             </div>
 
             {/* Modal Form body */}
-            <form onSubmit={handleSubmitEvent} className="p-6 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
+            <form onSubmit={(e) => handleSubmitEvent(e, false)} className="p-6 space-y-5 overflow-y-auto flex-1 custom-scrollbar">
               
               {/* Event Title */}
               <div className="space-y-1.5">
@@ -1128,6 +1193,71 @@ const ClubEvents: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 bg-white"
                 />
               </div>
+
+              {/* Recurrence (only for new events, not editing) */}
+              {!editingEvent && (
+                <div className="space-y-3 border border-indigo-100 rounded-lg p-4 bg-indigo-50/30">
+                  <div className="space-y-1.5">
+                    <label htmlFor="event-recurrence" className="text-xs font-bold uppercase tracking-wider text-indigo-600 flex items-center gap-1.5">
+                      <CalendarIcon className="h-3.5 w-3.5" />
+                      Repeat (Optional)
+                    </label>
+                    <select
+                      id="event-recurrence"
+                      value={recurrencePattern}
+                      onChange={(e) => setRecurrencePattern(e.target.value as RecurrencePattern)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 bg-white"
+                    >
+                      <option value="none">Does not repeat</option>
+                      <option value="daily">Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="biweekly">Bi-weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+
+                  {recurrencePattern !== 'none' && (
+                    <div className="space-y-1.5">
+                      <label htmlFor="event-recurrence-end" className="text-xs font-bold uppercase tracking-wider text-indigo-600">
+                        Repeat Until (Max 6 months)
+                      </label>
+                      <input
+                        id="event-recurrence-end"
+                        type="date"
+                        required
+                        value={recurrenceEndDate}
+                        onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                        min={newDateTime ? newDateTime.split('T')[0] : undefined}
+                        max={(() => {
+                          if (!newDateTime) return undefined;
+                          const maxDate = new Date(newDateTime);
+                          maxDate.setMonth(maxDate.getMonth() + 6);
+                          return maxDate.toISOString().split('T')[0];
+                        })()}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 bg-white"
+                      />
+                      <p className="text-xs text-gray-500">
+                        Events will be created up to this date (maximum 6 months from start).
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Editing a series event - show indicator */}
+              {editingEvent && (editingEvent.parentEventId || (editingEvent.recurrencePattern && editingEvent.recurrencePattern !== 'none')) && (
+                <div className="border border-amber-200 rounded-lg p-4 bg-amber-50">
+                  <p className="text-sm font-semibold text-amber-800 flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    This is part of a recurring series
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    {showUpdateSeriesConfirm 
+                      ? "Choose whether to update this event only, or this and all future events in the series."
+                      : "Click Save to see options for updating this series."}
+                  </p>
+                </div>
+              )}
 
               {/* Description */}
               <div className="space-y-1.5">
@@ -1204,15 +1334,72 @@ const ClubEvents: React.FC = () => {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  disabled={submittingEvent}
-                  className="flex-1 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all disabled:opacity-50 text-center"
-                >
-                  {submittingEvent ? 'Saving...' : (editingEvent ? 'Save Changes' : 'Schedule Gathering')}
-                </button>
+                
+                {/* Series Update Options */}
+                {showUpdateSeriesConfirm && editingEvent ? (
+                  <div className="flex gap-2 flex-1">
+                    <button
+                      type="button"
+                      onClick={(e) => handleSubmitEvent(e, false)}
+                      disabled={submittingEvent}
+                      className="flex-1 py-2 rounded-md border border-indigo-300 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs uppercase tracking-wider transition-colors text-center"
+                    >
+                      This Event Only
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleSubmitEvent(e, true)}
+                      disabled={submittingEvent}
+                      className="flex-1 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all disabled:opacity-50 text-center"
+                    >
+                      All Future Events
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={submittingEvent}
+                    className="flex-1 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-all disabled:opacity-50 text-center"
+                  >
+                    {submittingEvent ? 'Saving...' : (editingEvent ? 'Save Changes' : 'Schedule Gathering')}
+                  </button>
+                )}
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Series Confirmation Modal */}
+      {showDeleteSeriesConfirm && pendingDeleteEventId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
+          <div className="bg-white border border-gray-200 rounded-lg w-full max-w-md shadow-xl relative overflow-hidden text-left p-6">
+            <h3 className="text-lg font-black text-gray-900 tracking-tight uppercase italic mb-2">
+              Delete Recurring Event
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              This event is part of a recurring series. Would you like to delete only this occurrence, or all future events in the series?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteSeriesConfirm(false)}
+                className="flex-1 py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold text-xs uppercase tracking-wider transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteEvent(pendingDeleteEventId, false)}
+                className="flex-1 py-2 rounded-md border border-indigo-300 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs uppercase tracking-wider transition-colors"
+              >
+                This Event Only
+              </button>
+              <button
+                onClick={() => handleDeleteEvent(pendingDeleteEventId, true)}
+                className="flex-1 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider shadow-sm transition-colors"
+              >
+                Delete All
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -132,19 +132,23 @@ describe('events.create handler', () => {
 
     BookClub.isClubMember.mockResolvedValue(true);
     BookClub.getById.mockResolvedValue({ clubId: 'club-1', createdBy: 'user-1' });
-    Event.create.mockResolvedValue(mockCreated);
+    Event.createSeries.mockResolvedValue([mockCreated]);
 
     const res = await handler(event);
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
-    expect(body.data).toEqual(mockCreated);
-    expect(Event.create).toHaveBeenCalledWith({
+    expect(body.data.events).toEqual([mockCreated]);
+    expect(body.data.count).toBe(1);
+    expect(body.data.parentEventId).toBe('e1');
+    expect(Event.createSeries).toHaveBeenCalledWith({
       clubId: 'club-1',
       title: 'Meeting 1',
       description: 'Read first 3 chapters',
       dateTime: '2026-06-01T18:00:00Z',
       volunteerTasks: ['Bring snacks'],
       location: 'Room 202',
+      recurrencePattern: 'none',
+      recurrenceEndDate: undefined,
     }, 'user-1', 'Alice');
   });
 });

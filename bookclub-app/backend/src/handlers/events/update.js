@@ -15,6 +15,8 @@ const UpdateEventSchema = z.object({
 const handler = async (event) => {
   const { clubId, eventId } = event.pathParameters || {};
   const userId = event.userId;
+  const queryParams = event.queryStringParameters || {};
+  const updateSeries = queryParams.updateSeries === 'true';
 
   if (!clubId || !eventId) {
     return response.validationError({ message: 'Club ID and Event ID are required' });
@@ -39,12 +41,31 @@ const handler = async (event) => {
   const body = JSON.parse(event.body || '{}');
   const data = UpdateEventSchema.parse(body);
 
+  // Check if this is part of a series and user wants to update the series
+  const isPartOfSeries = existingEvent.parentEventId || 
+    (existingEvent.recurrencePattern && existingEvent.recurrencePattern !== 'none');
+  
+  if (updateSeries && isPartOfSeries) {
+    // Update this and all future events in the series
+    const updatedEvents = await Event.updateSeriesFrom(eventId, data);
+    
+    return response.success({
+      events: updatedEvents,
+      seriesUpdated: true,
+      updatedCount: updatedEvents.length,
+    });
+  }
+
+  // Single event update
   const updatedEvent = await Event.update(eventId, data);
   if (!updatedEvent) {
     return response.notFound('Event not found during update');
   }
 
-  return response.success(updatedEvent);
+  return response.success({
+    ...updatedEvent,
+    seriesUpdated: false,
+  });
 };
 
 module.exports.handler = withUser(handler);

@@ -399,7 +399,7 @@ describe('ClubEvents Page Component', () => {
       title: 'Reading Dune: Updated Title',
       location: 'New Location Room 4',
     };
-    (apiService.updateEvent as jest.Mock).mockResolvedValue(updatedEvent);
+    (apiService.updateEvent as jest.Mock).mockResolvedValue({ ...updatedEvent, seriesUpdated: false });
 
     render(
       <TestWrapper>
@@ -440,7 +440,7 @@ describe('ClubEvents Page Component', () => {
       loading: false,
     });
 
-    (apiService.deleteEvent as jest.Mock).mockResolvedValue({});
+    (apiService.deleteEvent as jest.Mock).mockResolvedValue({ message: 'Event deleted successfully', seriesDeleted: false });
     jest.spyOn(window, 'confirm').mockReturnValue(true);
 
     render(

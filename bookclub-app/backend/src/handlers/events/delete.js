@@ -5,6 +5,8 @@ const { withUser } = require('../../lib/middleware');
 const handler = async (event) => {
   const { clubId, eventId } = event.pathParameters || {};
   const userId = event.userId;
+  const queryParams = event.queryStringParameters || {};
+  const deleteSeries = queryParams.deleteSeries === 'true';
 
   if (!clubId || !eventId) {
     return response.validationError({ message: 'Club ID and Event ID are required' });
@@ -26,12 +28,30 @@ const handler = async (event) => {
     return response.forbidden('Only the creator of the event can delete it');
   }
 
+  if (deleteSeries) {
+    // Get the parent event ID (this event or its parent)
+    const parentEventId = existingEvent.parentEventId || existingEvent.eventId;
+    const seriesDeleted = await Event.deleteSeries(parentEventId);
+    
+    if (!seriesDeleted) {
+      return response.error('Failed to delete event series', 500);
+    }
+    
+    return response.success({ 
+      message: 'Event series deleted successfully',
+      seriesDeleted: true,
+    });
+  }
+
   const success = await Event.delete(eventId);
   if (!success) {
     return response.notFound('Event not found during deletion');
   }
 
-  return response.success({ message: 'Event deleted successfully' });
+  return response.success({ 
+    message: 'Event deleted successfully',
+    seriesDeleted: false,
+  });
 };
 
 module.exports.handler = withUser(handler);
