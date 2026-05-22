@@ -36,6 +36,7 @@ import MyItemsPage from './pages/MyItemsPage';
 import ClubRequests from './pages/ClubRequests';
 import ClubMembers from './pages/ClubMembers';
 import ClubBooks from './pages/ClubBooks';
+import ClubJoinQr from './pages/ClubJoinQr';
 import LostFoundHub from './pages/LostFoundHub';
 import LostFoundDetails from './pages/LostFoundDetails';
 import MyLostFound from './pages/MyLostFound';
@@ -207,6 +208,10 @@ function App() {
                       <ClubBooks />
                     </ClubProtectedRoute>
                   }
+                />
+                <Route
+                  path="/clubs/:clubId/join-qr"
+                  element={<ClubJoinQr />}
                 />
                 <Route
                   path="/my-books"

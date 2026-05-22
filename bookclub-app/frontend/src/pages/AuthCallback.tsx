@@ -96,7 +96,7 @@ const AuthCallback: React.FC = () => {
         } catch (_) {
           // non-critical — they can still join manually
         }
-        redirectTo = '/clubs/browse';
+        redirectTo = `/clubs/${pendingClubId}/join-qr`;
       }
 
       setMessage('Signed in successfully. Redirecting…');

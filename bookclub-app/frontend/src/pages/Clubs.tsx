@@ -9,6 +9,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import InviteByEmailModal from '../components/InviteByEmailModal';
 import CreateClubModal from '../components/CreateClubModal';
 import ClubCard from '../components/ClubCard';
+import JoinClubQRModal from '../components/JoinClubQRModal';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
 import { useNotification } from '../contexts/NotificationContext';
 
@@ -23,6 +24,7 @@ const Clubs: React.FC = () => {
   const [showCreate, setShowCreate] = useState(false);
   const [clubToDelete, setClubToDelete] = useState<BookClub | null>(null);
   const [invitingClub, setInvitingClub] = useState<BookClub | null>(null);
+  const [qrClub, setQrClub] = useState<BookClub | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -177,6 +179,7 @@ const Clubs: React.FC = () => {
                 onManageMembers={() => navigate(`/clubs/${club.clubId}/members`)}
                 onInviteByEmail={isAdmin(club) ? () => setInvitingClub(club) : undefined}
                 onCopyInvite={() => handleCopyInvite(club.inviteCode)}
+                onShowQR={isAdmin(club) ? () => setQrClub(club) : undefined}
                 onLeave={async () => {
                   if (window.confirm(`Are you sure you want to leave "${club.name}"?`)) {
                     try {
@@ -258,6 +261,11 @@ const Clubs: React.FC = () => {
           onConfirm={handleDelete}
           onCancel={() => setClubToDelete(null)}
           isDestructive={true}
+        />
+
+        <JoinClubQRModal
+          club={qrClub}
+          onClose={() => setQrClub(null)}
         />
       </div>
     </div>
