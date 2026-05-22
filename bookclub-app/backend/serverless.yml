@@ -75,7 +75,10 @@ provider:
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-bookclub-members-${self:provider.stage}/index/*
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-dm-conversations-${self:provider.stage}/index/*
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-dm-messages-${self:provider.stage}/index/*
+            - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-lost-found-${self:provider.stage}
             - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-lost-found-${self:provider.stage}/index/*
+            - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-club-email-invites-${self:provider.stage}
+            - arn:aws:dynamodb:${self:provider.region}:${aws:accountId}:table/${self:service}-club-email-invites-${self:provider.stage}/index/*
         - Effect: Allow
           Action:
             - s3:PutObject
@@ -901,6 +904,10 @@ functions:
               - X-Amz-Date
               - X-Api-Key
               - X-Amz-Security-Token
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
 
   listUserClubs:
     handler: src/handlers/clubs/list.handler
@@ -2085,6 +2092,43 @@ resources:
                 KeyType: HASH
               - AttributeName: createdAt
                 KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+
+    ClubEmailInvitesTable:
+      Type: AWS::CloudFormation::CustomResource
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+        ServiceToken: !GetAtt DynamoTableManagerLambdaFunction.Arn
+        TableName: ${self:service}-club-email-invites-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: clubId
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: ClubIdIndex
+            KeySchema:
+              - AttributeName: clubId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+          - IndexName: EmailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
             ProvisionedThroughput:
