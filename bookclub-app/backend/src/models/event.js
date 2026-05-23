@@ -49,8 +49,14 @@ class Event {
   static generateRecurringDates(startDate, pattern, maxDate) {
     const dates = [];
     const start = new Date(startDate);
+    // Interpret maxDate as inclusive of the entire day. If the input is a
+    // YYYY-MM-DD string (no time component), shift to end-of-day UTC so events
+    // occurring later in the day on the end date are still included.
     const max = new Date(maxDate);
-    
+    if (typeof maxDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(maxDate)) {
+      max.setUTCHours(23, 59, 59, 999);
+    }
+
     // Limit to 26 weeks from start
     const twentySixWeeksFromStart = new Date(start.getTime() + 26 * 7 * 24 * 60 * 60 * 1000);
     const effectiveMax = max < twentySixWeeksFromStart ? max : twentySixWeeksFromStart;
@@ -123,24 +129,33 @@ class Event {
     return events;
   }
 
-  // Get all events in a series
+  // Get all events in a series (parent + children)
   static async getSeries(parentEventId) {
     if (isOffline()) {
-      const allEvents = await LocalStorage.listEventsByClub(null);
-      return (allEvents || []).filter(e => 
+      const parent = await LocalStorage.getEvent(parentEventId);
+      if (!parent) return [];
+      const allEvents = await LocalStorage.listEventsByClub(parent.clubId);
+      return (allEvents || []).filter(e =>
         e.eventId === parentEventId || e.parentEventId === parentEventId
-      );
+      ).sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
     }
-    
-    // Query by parentEventId using a GSI scan fallback
-    const scanParams = {
+
+    // Look up the parent event via EventIdIndex GSI to discover its clubId.
+    const parent = await this.getById(parentEventId);
+    if (!parent) return [];
+
+    // Query within the club partition (efficient) and filter for series members.
+    const result = await dynamoDb.query({
       TableName: getTableName('bookclub-events'),
+      KeyConditionExpression: 'clubId = :clubId',
       FilterExpression: 'eventId = :parentId OR parentEventId = :parentId',
-      ExpressionAttributeValues: { ':parentId': parentEventId },
-    };
-    
-    const result = await dynamoDb.scan(scanParams);
-    return (result.Items || []).sort((a, b) => 
+      ExpressionAttributeValues: {
+        ':clubId': parent.clubId,
+        ':parentId': parentEventId,
+      },
+    });
+
+    return (result.Items || []).sort((a, b) =>
       new Date(a.dateTime) - new Date(b.dateTime)
     );
   }

@@ -80,6 +80,72 @@ describe('events.delete handler', () => {
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body);
     expect(body.data.message).toBe('Event deleted successfully');
+    expect(body.data.seriesDeleted).toBe(false);
     expect(Event.delete).toHaveBeenCalledWith('event-1');
+    expect(Event.deleteSeries).not.toHaveBeenCalled();
+  });
+
+  it('deletes the whole series when deleteSeries=true on a parent event', async () => {
+    const event = {
+      pathParameters: { clubId: 'club-1', eventId: 'parent-1' },
+      queryStringParameters: { deleteSeries: 'true' },
+      userId: 'user-1',
+    };
+
+    Event.getById.mockResolvedValue({
+      eventId: 'parent-1',
+      clubId: 'club-1',
+      createdBy: 'user-1',
+      recurrencePattern: 'weekly',
+    });
+    Event.deleteSeries.mockResolvedValue(true);
+
+    const res = await handler(event);
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.data.message).toBe('Event series deleted successfully');
+    expect(body.data.seriesDeleted).toBe(true);
+    expect(Event.deleteSeries).toHaveBeenCalledWith('parent-1');
+    expect(Event.delete).not.toHaveBeenCalled();
+  });
+
+  it('uses parentEventId when deleting a child event with deleteSeries=true', async () => {
+    const event = {
+      pathParameters: { clubId: 'club-1', eventId: 'child-2' },
+      queryStringParameters: { deleteSeries: 'true' },
+      userId: 'user-1',
+    };
+
+    Event.getById.mockResolvedValue({
+      eventId: 'child-2',
+      clubId: 'club-1',
+      createdBy: 'user-1',
+      parentEventId: 'parent-1',
+    });
+    Event.deleteSeries.mockResolvedValue(true);
+
+    const res = await handler(event);
+    expect(res.statusCode).toBe(200);
+    expect(Event.deleteSeries).toHaveBeenCalledWith('parent-1');
+  });
+
+  it('returns 500 when deleteSeries fails', async () => {
+    const event = {
+      pathParameters: { clubId: 'club-1', eventId: 'parent-1' },
+      queryStringParameters: { deleteSeries: 'true' },
+      userId: 'user-1',
+    };
+
+    Event.getById.mockResolvedValue({
+      eventId: 'parent-1',
+      clubId: 'club-1',
+      createdBy: 'user-1',
+      recurrencePattern: 'weekly',
+    });
+    Event.deleteSeries.mockResolvedValue(false);
+
+    const res = await handler(event);
+    expect(res.statusCode).toBe(500);
+    expect(JSON.parse(res.body).error.message).toBe('Failed to delete event series');
   });
 });
