@@ -190,7 +190,16 @@ class Event {
     if (isOffline()) {
       return LocalStorage.getEvent(eventId);
     }
-    return dynamoDb.get(getTableName('bookclub-events'), { eventId });
+    // Table primary key is composite (clubId HASH + eventId RANGE),
+    // so we use the EventIdIndex GSI to look up by eventId alone.
+    const result = await dynamoDb.query({
+      TableName: getTableName('bookclub-events'),
+      IndexName: 'EventIdIndex',
+      KeyConditionExpression: 'eventId = :eventId',
+      ExpressionAttributeValues: { ':eventId': eventId },
+      Limit: 1,
+    });
+    return (result.Items && result.Items[0]) || null;
   }
 
   static async listByClub(clubId) {
