@@ -162,12 +162,19 @@ custom:
 
   prune:
     automatic: true
-    number: 2
+    number: 5
+
+  splitStacks:
+    perFunction: false
+    perType: true
+    perGroupFunction: false
+    nestedStackCount: 10
 
 plugins:
   - serverless-offline
   - serverless-plugin-existing-s3
   - serverless-prune-plugin
+  - serverless-plugin-split-stacks
 functions:
   # Book-related functions
   createBook:

@@ -27,11 +27,11 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "aws-sdk": "^2.1692.0",
-    "uuid": "^9.0.0",
-    "yaml": "^2.8.1",
     "@aws-sdk/client-bedrock-runtime": "^3.645.0",
-    "sharp": "^0.33.3"
+    "aws-sdk": "^2.1692.0",
+    "sharp": "^0.33.3",
+    "uuid": "^9.0.0",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",
@@ -41,8 +41,9 @@
     "js-yaml": "^4.1.0",
     "serverless": "^3.40.0",
     "serverless-offline": "^13.8.0",
-    "serverless-prune-plugin": "^2.1.0",
     "serverless-plugin-existing-s3": "^2.4.0",
+    "serverless-plugin-split-stacks": "^1.14.0",
+    "serverless-prune-plugin": "^2.1.0",
     "supertest": "^6.3.3"
   },
   "jest": {
