@@ -8,7 +8,7 @@ interface ClubProtectedRouteProps {
 }
 
 const ClubProtectedRoute: React.FC<ClubProtectedRouteProps> = ({ children }) => {
-  const { hasClubAccess, loading } = useAuth();
+  const { canAccessClubs, loading } = useAuth();
 
   if (loading) {
     return (
@@ -21,7 +21,7 @@ const ClubProtectedRoute: React.FC<ClubProtectedRouteProps> = ({ children }) => 
     );
   }
 
-  if (!hasClubAccess) {
+  if (!canAccessClubs) {
     return <Navigate to="/library" replace />;
   }
 

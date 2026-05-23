@@ -14,7 +14,14 @@ interface AuthContextType {
   logoutWithSessionExpired: () => void;
   isAuthenticated: boolean;
   isSuperAdmin: boolean;
+  /** True if the user is on the allow-list to create clubs (superadmin, @dev, or curated emails). */
   hasClubAccess: boolean;
+  /** True if the user is a member of at least one club (independent of create-permissions). */
+  isClubMember: boolean;
+  /** True if the user can view club/event pages (creator or member). */
+  canAccessClubs: boolean;
+  /** Refresh the membership flag (e.g., after joining/leaving a club). */
+  refreshClubMembership: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,6 +41,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isClubMember, setIsClubMember] = useState(false);
   const { addNotification } = useNotification();
 
   const logout = () => {
@@ -50,6 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     eraseCookie('user', domain);
     
     setUser(null);
+    setIsClubMember(false);
   };
 
   const logoutWithSessionExpired = useCallback(() => {
@@ -190,6 +199,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return ALLOWED_CLUB_EMAILS.includes(user.email?.toLowerCase());
   }, [user, ALLOWED_CLUB_EMAILS]);
 
+  const refreshClubMembership = useCallback(async () => {
+    if (!user) {
+      setIsClubMember(false);
+      return;
+    }
+    try {
+      const result = await apiService.getUserClubs();
+      const clubs = result?.items || [];
+      setIsClubMember(clubs.length > 0);
+    } catch (_e) {
+      // Non-fatal: keep previous flag on transient errors
+    }
+  }, [user]);
+
+  // Refresh club membership whenever the authenticated user changes
+  useEffect(() => {
+    if (user) {
+      refreshClubMembership();
+    } else {
+      setIsClubMember(false);
+    }
+  }, [user, refreshClubMembership]);
+
+  const canAccessClubs = hasClubAccess || isClubMember;
+
   const value: AuthContextType = {
     user,
     loading,
@@ -199,6 +233,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
     isSuperAdmin: user?.role === 'superadmin',
     hasClubAccess,
+    isClubMember,
+    canAccessClubs,
+    refreshClubMembership,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
