@@ -11,7 +11,8 @@ import {
   ClipboardDocumentIcon,
   ArrowRightOnRectangleIcon,
   MagnifyingGlassIcon,
-  EnvelopeIcon
+  EnvelopeIcon,
+  QrCodeIcon
 } from '@heroicons/react/24/outline';
 
 interface ClubCardProps {
@@ -29,6 +30,7 @@ interface ClubCardProps {
   onManageMembers?: () => void;
   onCopyInvite?: () => void;
   onInviteByEmail?: () => void;
+  onShowQR?: () => void;
 }
 
 const ClubCard: React.FC<ClubCardProps> = ({ 
@@ -45,7 +47,8 @@ const ClubCard: React.FC<ClubCardProps> = ({
   onManageRequests,
   onManageMembers,
   onCopyInvite,
-  onInviteByEmail
+  onInviteByEmail,
+  onShowQR
 }) => {
   const navigate = useNavigate();
 
@@ -201,6 +204,16 @@ const ClubCard: React.FC<ClubCardProps> = ({
               <ClipboardDocumentIcon className="h-3.5 w-3.5" />
               Code
             </button>
+            {onShowQR && (
+              <button
+                onClick={(e) => handleAction(e, onShowQR)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
+                title="Show QR Code"
+              >
+                <QrCodeIcon className="h-3.5 w-3.5" />
+                QR Code
+              </button>
+            )}
           </>
         )}
       </div>
