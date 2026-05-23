@@ -15,6 +15,7 @@ import {
   CheckIcon,
   PaperAirplaneIcon,
   ArrowLeftIcon,
+  ArrowPathIcon,
   MapPinIcon
 } from '@heroicons/react/24/outline';
 
@@ -860,6 +861,23 @@ const ClubEvents: React.FC = () => {
                       <h2 className="text-2xl font-black text-gray-900 tracking-tight uppercase italic">
                         {selectedEvent.title}
                       </h2>
+                      {(selectedEvent.parentEventId || (selectedEvent.recurrencePattern && selectedEvent.recurrencePattern !== 'none')) && (
+                        <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider">
+                          <ArrowPathIcon className="h-3.5 w-3.5" />
+                          {(() => {
+                            const pattern = selectedEvent.parentEventId
+                              ? events.find(e => e.eventId === selectedEvent.parentEventId)?.recurrencePattern
+                              : selectedEvent.recurrencePattern;
+                            const label: Record<string, string> = {
+                              daily: 'Repeats Daily',
+                              weekly: 'Repeats Weekly',
+                              biweekly: 'Repeats Bi-Weekly',
+                              monthly: 'Repeats Monthly',
+                            };
+                            return label[pattern || ''] || 'Part of a Series';
+                          })()}
+                        </div>
+                      )}
                       <div className="mt-3 flex flex-wrap items-center gap-y-2 gap-x-4 text-xs font-bold uppercase tracking-wider text-gray-400">
                         <span className="flex items-center gap-1">
                           <CalendarIcon className="h-4 w-4 text-indigo-500" />

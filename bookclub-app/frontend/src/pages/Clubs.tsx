@@ -17,7 +17,7 @@ const Clubs: React.FC = () => {
   const [clubs, setClubs] = useState<BookClub[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { user, hasClubAccess } = useAuth();
+  const { user, hasClubAccess, refreshClubMembership } = useAuth();
   const { addNotification } = useNotification();
   const [editingClub, setEditingClub] = useState<BookClub | null>(null);
   const [showJoin, setShowJoin] = useState(false);
@@ -223,7 +223,7 @@ const Clubs: React.FC = () => {
         {showJoin && (
           <JoinClubModal
             onClose={() => setShowJoin(false)}
-            onClubJoined={async (club) => { setShowJoin(false); await load(); }}
+            onClubJoined={async (club) => { setShowJoin(false); await load(); await refreshClubMembership(); }}
           />
         )}
 
@@ -233,6 +233,7 @@ const Clubs: React.FC = () => {
             onClubCreated={async (newClub) => {
               setShowCreate(false);
               await load();
+              await refreshClubMembership();
               addNotification('success', `Club "${newClub.name}" created successfully`);
             }}
           />
