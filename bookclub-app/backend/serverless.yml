@@ -2269,6 +2269,37 @@ resources:
               ReadCapacityUnits: 5
               WriteCapacityUnits: 5
 
+    BookclubEventsTable:
+      Type: AWS::CloudFormation::CustomResource
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+        ServiceToken: !GetAtt DynamoTableManagerLambdaFunction.Arn
+        TableName: ${self:service}-bookclub-events-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: clubId
+            AttributeType: S
+          - AttributeName: eventId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: clubId
+            KeyType: HASH
+          - AttributeName: eventId
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: EventIdIndex
+            KeySchema:
+              - AttributeName: eventId
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 5
+              WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
     ClubEmailInvitesTable:
       Type: AWS::CloudFormation::CustomResource
       DeletionPolicy: Retain
