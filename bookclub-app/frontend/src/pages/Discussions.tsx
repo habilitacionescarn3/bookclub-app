@@ -217,16 +217,17 @@ const Discussions: React.FC = () => {
               <form onSubmit={submitPost} className="rounded-lg border border-gray-200 bg-white shadow-sm">
                 <div className="p-3">
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                    <h2 className="text-sm font-bold text-gray-900">Create post</h2>
-                    <span className="text-xs font-semibold text-gray-500">
-                      Posting as {user?.name || 'You'}
-                    </span>
+                    <button type="button" className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50" title="Speak" aria-label="Speak">
+                      <span>🔊</span>
+                       <span>Speak</span>
+                    </button>
+
                   </div>
                   <textarea
                     value={postText}
                     onFocus={() => setComposerFocused(true)}
                     onChange={event => setPostText(event.target.value.slice(0, MAX_POST_LENGTH))}
-                    rows={composerExpanded ? 3 : 1}
+                    rows={composerExpanded ? 10: 1}
                     placeholder={composerPlaceholder}
                     className="block min-h-[42px] w-full resize-none rounded-lg border-0 bg-gray-100 px-3.5 py-2.5 text-sm leading-5 text-gray-900 placeholder:text-gray-500 focus:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-teal-100"
                   />
