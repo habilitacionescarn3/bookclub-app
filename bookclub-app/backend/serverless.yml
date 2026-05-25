@@ -1394,6 +1394,26 @@ functions:
             authorizerId:
               Ref: ApiGatewayAuthorizer
 
+  eventIcal:
+    handler: src/handlers/events/ical.handler
+    events:
+      - http:
+          method: GET
+          path: /clubs/{clubId}/events/{eventId}.ics
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+              - X-Access-Token
+              - X-Amz-Date
+              - X-Api-Key
+              - X-Amz-Security-Token
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId:
+              Ref: ApiGatewayAuthorizer
+
   # Lost & Found handlers
   listLostFound:
     handler: src/handlers/lost-found/list.handler

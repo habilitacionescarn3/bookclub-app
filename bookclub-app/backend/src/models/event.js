@@ -24,6 +24,12 @@ class Event {
       location: data.location || '',
       createdBy: userId,
       creatorName: userName || 'Anonymous',
+      organizers: {
+        [userId]: {
+          name: userName || 'Anonymous',
+          nominatedAt: now
+        }
+      },
       volunteerTasks: Array.isArray(data.volunteerTasks) ? data.volunteerTasks : [],
       volunteers: {},
       rsvps: {},
@@ -66,18 +72,21 @@ class Event {
     while (current <= effectiveMax) {
       dates.push(new Date(current).toISOString());
       
+      // Use UTC methods so recurrence is deterministic regardless of the
+      // process timezone and DST transitions. Events recur at the same
+      // absolute UTC instant; wall-clock display is the renderer's concern.
       switch (pattern) {
         case 'daily':
-          current.setDate(current.getDate() + 1);
+          current.setUTCDate(current.getUTCDate() + 1);
           break;
         case 'weekly':
-          current.setDate(current.getDate() + 7);
+          current.setUTCDate(current.getUTCDate() + 7);
           break;
         case 'biweekly':
-          current.setDate(current.getDate() + 14);
+          current.setUTCDate(current.getUTCDate() + 14);
           break;
         case 'monthly':
-          current.setMonth(current.getMonth() + 1);
+          current.setUTCMonth(current.getUTCMonth() + 1);
           break;
         default:
           return dates; // Only return first date for non-recurring
@@ -217,25 +226,70 @@ class Event {
     return (result.Items && result.Items[0]) || null;
   }
 
-  static async listByClub(clubId) {
+  /**
+   * List events for a club.
+   *
+   * Backward-compatible default (no options): returns a chronologically
+   * sorted Array<ClubEvent>, transparently following DynamoDB pagination
+   * tokens so that clubs with > 1 MB of events are not truncated.
+   *
+   * When `opts.limit` is provided, returns `{ items, nextToken }` so
+   * callers can paginate explicitly. Sort order in this mode follows the
+   * table's natural key order (eventId asc within the partition).
+   */
+  static async listByClub(clubId, opts = {}) {
+    const { limit, nextToken } = opts;
+    const paginated = limit != null;
+
     if (isOffline()) {
-      return LocalStorage.listEventsByClub(clubId);
+      const all = await LocalStorage.listEventsByClub(clubId);
+      if (!paginated) return all;
+      // Naive offset-style pagination using nextToken as a numeric cursor.
+      const start = nextToken ? parseInt(nextToken, 10) || 0 : 0;
+      const end = start + limit;
+      const slice = all.slice(start, end);
+      return {
+        items: slice,
+        nextToken: end < all.length ? String(end) : null,
+      };
     }
 
-    // In DynamoDB, if we don't have GSI on clubId, we can query if hash is clubId, range is eventId.
-    // Let's assume table hash key is clubId, range key is eventId.
-    // If table hash key is eventId, we'd need a GSI for ClubId. But wait, in the plan we proposed Hash: clubId, Range: eventId.
-    // Let's implement query assuming Hash: clubId, Range: eventId.
-    const params = {
+    const baseParams = {
       TableName: getTableName('bookclub-events'),
       KeyConditionExpression: 'clubId = :clubId',
       ExpressionAttributeValues: { ':clubId': clubId },
     };
 
-    const result = await dynamoDb.query(params);
-    let items = result.Items || [];
-    
-    // Sort chronologically by dateTime
+    if (paginated) {
+      const params = { ...baseParams, Limit: limit };
+      if (nextToken) {
+        try {
+          params.ExclusiveStartKey = JSON.parse(
+            Buffer.from(nextToken, 'base64').toString('utf8')
+          );
+        } catch (_e) {
+          // Ignore invalid tokens; treat as start-of-list
+        }
+      }
+      const result = await dynamoDb.query(params);
+      const next = result.LastEvaluatedKey
+        ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString('base64')
+        : null;
+      return { items: result.Items || [], nextToken: next };
+    }
+
+    // Default: follow all pages and return a chronologically sorted array.
+    const items = [];
+    let lastKey;
+    do {
+      const params = { ...baseParams };
+      if (lastKey) params.ExclusiveStartKey = lastKey;
+      // eslint-disable-next-line no-await-in-loop
+      const result = await dynamoDb.query(params);
+      if (result.Items && result.Items.length) items.push(...result.Items);
+      lastKey = result.LastEvaluatedKey;
+    } while (lastKey);
+
     return items.sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
   }
 
@@ -252,6 +306,7 @@ class Event {
     if (updates.volunteers !== undefined) allowed.volunteers = updates.volunteers;
     if (updates.rsvps !== undefined) allowed.rsvps = updates.rsvps;
     if (updates.discussions !== undefined) allowed.discussions = updates.discussions;
+    if (updates.organizers !== undefined) allowed.organizers = updates.organizers;
 
     const now = new Date().toISOString();
     const merged = { ...existing, ...allowed, updatedAt: now };

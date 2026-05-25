@@ -10,6 +10,10 @@ const UpdateEventSchema = z.object({
   dateTime: z.string().regex(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/, 'Invalid ISO 8601 date-time format').optional(),
   volunteerTasks: z.array(z.string().min(1)).optional(),
   location: z.string().max(200, 'Location must be 200 characters or less').optional(),
+  organizers: z.record(z.object({
+    name: z.string(),
+    nominatedAt: z.string(),
+  })).optional(),
 });
 
 const handler = async (event) => {
@@ -33,9 +37,10 @@ const handler = async (event) => {
     return response.error('Event does not belong to the specified club', 400);
   }
 
-  // Verify that requester is the event creator
-  if (existingEvent.createdBy !== userId) {
-    return response.forbidden('Only the creator of the event can edit it');
+  // Verify that requester is an organizer (creator or nominated organizer)
+  const isOrganizer = existingEvent.createdBy === userId || (existingEvent.organizers && existingEvent.organizers[userId]);
+  if (!isOrganizer) {
+    return response.forbidden('Only an organizer of the event can edit it');
   }
 
   const body = JSON.parse(event.body || '{}');
