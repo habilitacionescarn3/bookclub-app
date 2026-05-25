@@ -250,6 +250,7 @@ export interface ClubEvent {
   creatorName: string;
   volunteerTasks: string[];
   volunteers: Record<string, { name: string; task: string; signedUpAt: string }>;
+  organizers?: Record<string, { name: string; nominatedAt: string }>;
   rsvps: Record<string, { name: string; status: 'going' | 'interested' | 'not_going'; updatedAt: string }>;
   discussions: Array<{ commentId: string; userId: string; name: string; content: string; createdAt: string }>;
   // Recurrence fields

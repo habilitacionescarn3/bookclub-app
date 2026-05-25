@@ -89,6 +89,44 @@ describe('Event model', () => {
       expect(diffWeeks).toBeLessThanOrEqual(26);
     });
 
+    test('weekly recurrence is DST-safe (US spring-forward window)', () => {
+      // Start 2026-03-01 12:00 UTC, weekly through 2026-04-05.
+      // US "spring forward" DST transition is 2026-03-08. UTC instants must
+      // remain exactly 7 days apart regardless of local DST.
+      const dates = Event.generateRecurringDates(
+        '2026-03-01T12:00:00.000Z',
+        'weekly',
+        '2026-04-05'
+      );
+      // 03-01, 03-08, 03-15, 03-22, 03-29, 04-05 = 6
+      expect(dates).toHaveLength(6);
+      for (let i = 1; i < dates.length; i++) {
+        const deltaMs = new Date(dates[i]).getTime() - new Date(dates[i - 1]).getTime();
+        expect(deltaMs).toBe(7 * 24 * 60 * 60 * 1000);
+      }
+      // Each occurrence preserves the original UTC hour-of-day
+      dates.forEach((iso) => {
+        const d = new Date(iso);
+        expect(d.getUTCHours()).toBe(12);
+        expect(d.getUTCMinutes()).toBe(0);
+      });
+    });
+
+    test('monthly recurrence preserves the UTC day-of-month', () => {
+      const dates = Event.generateRecurringDates(
+        '2026-01-15T09:00:00.000Z',
+        'monthly',
+        '2026-05-15'
+      );
+      // 01-15, 02-15, 03-15, 04-15, 05-15 = 5
+      expect(dates).toHaveLength(5);
+      dates.forEach((iso) => {
+        const d = new Date(iso);
+        expect(d.getUTCDate()).toBe(15);
+        expect(d.getUTCHours()).toBe(9);
+      });
+    });
+
     test('returns empty array when end date is before start', () => {
       const dates = Event.generateRecurringDates(
         '2026-06-01T18:00:00.000Z',

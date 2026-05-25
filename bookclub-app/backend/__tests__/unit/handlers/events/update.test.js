@@ -54,18 +54,50 @@ describe('events.update handler', () => {
     expect(JSON.parse(res.body).error.message).toBe('Event does not belong to the specified club');
   });
 
-  it('returns 403 when user is not the event creator', async () => {
+  it('returns 403 when user is not an organizer of the event', async () => {
     const event = {
       pathParameters: { clubId: 'club-1', eventId: 'event-1' },
       userId: 'user-2',
       body: JSON.stringify({ title: 'New Title' }),
     };
 
-    Event.getById.mockResolvedValue({ eventId: 'event-1', clubId: 'club-1', createdBy: 'user-1' });
+    Event.getById.mockResolvedValue({
+      eventId: 'event-1',
+      clubId: 'club-1',
+      createdBy: 'user-1',
+      organizers: {
+        'user-1': { name: 'User 1', nominatedAt: '2026-05-25' }
+      }
+    });
 
     const res = await handler(event);
     expect(res.statusCode).toBe(403);
-    expect(JSON.parse(res.body).error.message).toBe('Only the creator of the event can edit it');
+    expect(JSON.parse(res.body).error.message).toBe('Only an organizer of the event can edit it');
+  });
+
+  it('allows a nominated organizer to update the event', async () => {
+    const event = {
+      pathParameters: { clubId: 'club-1', eventId: 'event-1' },
+      userId: 'user-2',
+      body: JSON.stringify({ title: 'Updated Title' }),
+    };
+
+    const mockEvent = {
+      eventId: 'event-1',
+      clubId: 'club-1',
+      createdBy: 'user-1',
+      organizers: {
+        'user-1': { name: 'User 1', nominatedAt: '2026-05-25' },
+        'user-2': { name: 'User 2', nominatedAt: '2026-05-25' }
+      }
+    };
+
+    Event.getById.mockResolvedValue(mockEvent);
+    Event.update.mockResolvedValue({ ...mockEvent, title: 'Updated Title' });
+
+    const res = await handler(event);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).data.title).toBe('Updated Title');
   });
 
   it('returns 400 when validation fails (invalid ISO 8601 date)', async () => {

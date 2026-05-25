@@ -1011,6 +1011,25 @@ class ApiService {
     return response.data.data!;
   }
 
+  async downloadEventIcs(clubId: string, eventId: string, suggestedName = 'event'): Promise<void> {
+    const response = await this.api.get(`/clubs/${clubId}/events/${eventId}.ics`, {
+      responseType: 'blob',
+      headers: { Accept: 'text/calendar' },
+    });
+    const blob = response.data instanceof Blob
+      ? response.data
+      : new Blob([response.data], { type: 'text/calendar;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const safe = suggestedName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'event';
+    a.download = `${safe}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+
   async remindEvent(clubId: string, eventId: string): Promise<{ message: string; sentCount: number }> {
     const response: AxiosResponse<ApiResponse<{ message: string; sentCount: number }>> = await this.api.post(`/clubs/${clubId}/events/${eventId}/remind`);
     if (!response.data.success) {

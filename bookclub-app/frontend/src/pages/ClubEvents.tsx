@@ -29,6 +29,10 @@ const ClubEvents: React.FC = () => {
   const [events, setEvents] = useState<ClubEvent[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   
+  // Organizer management states
+  const [clubMembers, setClubMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  
   // Loading & error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -214,6 +218,91 @@ const ClubEvents: React.FC = () => {
     }
   }, [selectedEvent?.discussions]);
 
+  // Helper to check if a user is an organizer of the event
+  const isOrganizer = useCallback((evt: ClubEvent | null, uid: string | undefined) => {
+    if (!evt || !uid) return false;
+    return evt.createdBy === uid || !!(evt.organizers && evt.organizers[uid]);
+  }, []);
+
+  // Fetch club members if selected event is loaded and user is organizer
+  const fetchClubMembers = useCallback(async (targetClubId: string) => {
+    try {
+      setLoadingMembers(true);
+      const result = await apiService.listMembers(targetClubId);
+      setClubMembers(result.items || []);
+    } catch (err) {
+      console.error("Failed to load club members", err);
+    } finally {
+      setLoadingMembers(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedEvent && clubId && isAuthenticated && user) {
+      const isOrg = selectedEvent.createdBy === user.userId || !!(selectedEvent.organizers && selectedEvent.organizers[user.userId]);
+      if (isOrg && clubMembers.length === 0 && !loadingMembers) {
+        fetchClubMembers(clubId);
+      }
+    }
+  }, [selectedEvent, clubId, isAuthenticated, user, clubMembers.length, loadingMembers, fetchClubMembers]);
+
+  useEffect(() => {
+    setClubMembers([]);
+  }, [clubId]);
+
+  const handleNominateOrganizer = async (nomineeUserId: string, nomineeName: string) => {
+    if (!clubId || !selectedEvent || !isAuthenticated) return;
+    try {
+      setActionError('');
+      const updatedOrganizers = {
+        ...(selectedEvent.organizers || {}),
+        [nomineeUserId]: {
+          name: nomineeName,
+          nominatedAt: new Date().toISOString()
+        }
+      };
+      
+      const result = await apiService.updateEvent(clubId, selectedEvent.eventId, { organizers: updatedOrganizers });
+      
+      if ('seriesUpdated' in result && result.seriesUpdated) {
+        setEvents(prev => prev.map(e => {
+          const matchingUpdated = result.events.find(u => u.eventId === e.eventId);
+          return matchingUpdated ? matchingUpdated : e;
+        }));
+      } else {
+        const updatedEvent = result as ClubEvent;
+        setEvents(prev => prev.map(e => e.eventId === selectedEvent.eventId ? updatedEvent : e));
+      }
+    } catch (e: any) {
+      setActionError(e.message || 'Failed to nominate organizer');
+    }
+  };
+
+  const handleRemoveOrganizer = async (nomineeUserId: string) => {
+    if (!clubId || !selectedEvent || !isAuthenticated) return;
+    if (nomineeUserId === selectedEvent.createdBy) return; // Cannot remove creator
+    
+    try {
+      setActionError('');
+      const updatedOrganizers = { ...(selectedEvent.organizers || {}) };
+      delete updatedOrganizers[nomineeUserId];
+      
+      const result = await apiService.updateEvent(clubId, selectedEvent.eventId, { organizers: updatedOrganizers });
+      
+      if ('seriesUpdated' in result && result.seriesUpdated) {
+        setEvents(prev => prev.map(e => {
+          const matchingUpdated = result.events.find(u => u.eventId === e.eventId);
+          return matchingUpdated ? matchingUpdated : e;
+        }));
+      } else {
+        const updatedEvent = result as ClubEvent;
+        setEvents(prev => prev.map(e => e.eventId === selectedEvent.eventId ? updatedEvent : e));
+      }
+    } catch (e: any) {
+      setActionError(e.message || 'Failed to remove organizer');
+    }
+  };
+
   // Handle RSVP
   const handleRsvp = async (status: 'going' | 'interested' | 'not_going') => {
     if (!clubId || !selectedEventId || !isAuthenticated) return;
@@ -252,6 +341,46 @@ const ClubEvents: React.FC = () => {
       setActionError(e.message || 'Failed to post comment');
     } finally {
       setSendingComment(false);
+    }
+  };
+
+  // Format a Date as a UTC iCal-style timestamp YYYYMMDDTHHMMSSZ
+  const toUtcIcal = (input: string | Date) => {
+    const d = input instanceof Date ? input : new Date(input);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return (
+      d.getUTCFullYear().toString() +
+      pad(d.getUTCMonth() + 1) +
+      pad(d.getUTCDate()) +
+      'T' +
+      pad(d.getUTCHours()) +
+      pad(d.getUTCMinutes()) +
+      pad(d.getUTCSeconds()) +
+      'Z'
+    );
+  };
+
+  // Build a Google Calendar deep link for the given event (defaults to 1h duration)
+  const buildGoogleCalendarUrl = (evt: ClubEvent) => {
+    const start = new Date(evt.dateTime);
+    const end = new Date(start.getTime() + 60 * 60 * 1000);
+    const params = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: evt.title || 'Event',
+      dates: `${toUtcIcal(start)}/${toUtcIcal(end)}`,
+    });
+    const descLines = [evt.description, club?.name ? `Club: ${club.name}` : ''].filter(Boolean);
+    if (descLines.length) params.set('details', descLines.join('\n'));
+    if (evt.location) params.set('location', evt.location);
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  };
+
+  const handleDownloadIcs = async (evt: ClubEvent) => {
+    if (!clubId) return;
+    try {
+      await apiService.downloadEventIcs(clubId, evt.eventId, evt.title || 'event');
+    } catch (e: any) {
+      setActionError(e.message || 'Failed to download calendar file');
     }
   };
 
@@ -902,7 +1031,30 @@ const ClubEvents: React.FC = () => {
                     
                     {/* Admin actions: Edit & Delete & Reminder */}
                     <div className="self-start sm:self-auto flex flex-wrap items-center gap-2">
-                      {isAuthenticated && (selectedEvent.createdBy === user?.userId || isCreatorOrAdmin) && (
+                      {isAuthenticated && (
+                        <>
+                          <a
+                            href={buildGoogleCalendarUrl(selectedEvent)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 transition-colors cursor-pointer"
+                            title="Add to Google Calendar"
+                          >
+                            <CalendarIcon className="h-4 w-4 text-indigo-650" />
+                            Google Calendar
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadIcs(selectedEvent)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 transition-colors cursor-pointer"
+                            title="Download .ics file for Apple Calendar, Outlook, etc."
+                          >
+                            <CalendarIcon className="h-4 w-4 text-indigo-650" />
+                            Download .ics
+                          </button>
+                        </>
+                      )}
+                      {isAuthenticated && (isOrganizer(selectedEvent, user?.userId) || isCreatorOrAdmin) && (
                         <button
                           onClick={handleSendReminder}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-gray-150 hover:bg-gray-200 text-gray-700 text-xs font-bold uppercase tracking-wider border border-gray-300 transition-colors cursor-pointer"
@@ -912,21 +1064,22 @@ const ClubEvents: React.FC = () => {
                         </button>
                       )}
 
-                      {isAuthenticated && selectedEvent.createdBy === user?.userId && (
-                        <>
-                          <button
-                            onClick={() => handleOpenEditModal(selectedEvent)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-750 text-xs font-bold uppercase tracking-wider border border-indigo-200 transition-colors cursor-pointer"
-                          >
-                            Edit Gathering
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEvent(selectedEvent.eventId)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-50 hover:bg-red-105 text-red-750 text-xs font-bold uppercase tracking-wider border border-red-200 transition-colors cursor-pointer"
-                          >
-                            Delete Gathering
-                          </button>
-                        </>
+                      {isAuthenticated && isOrganizer(selectedEvent, user?.userId) && (
+                        <button
+                          onClick={() => handleOpenEditModal(selectedEvent)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-750 text-xs font-bold uppercase tracking-wider border border-indigo-200 transition-colors cursor-pointer"
+                        >
+                          Edit Gathering
+                        </button>
+                      )}
+
+                      {isAuthenticated && (selectedEvent.createdBy === user?.userId || isCreatorOrAdmin) && (
+                        <button
+                          onClick={() => handleDeleteEvent(selectedEvent.eventId)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-red-50 hover:bg-red-105 text-red-750 text-xs font-bold uppercase tracking-wider border border-red-200 transition-colors cursor-pointer"
+                        >
+                          Delete Gathering
+                        </button>
                       )}
                     </div>
                   </div>
@@ -1055,6 +1208,193 @@ const ClubEvents: React.FC = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Organizers Card */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 space-y-4 shadow-sm text-left">
+                  <h3 className="text-lg font-black text-gray-900 tracking-tight uppercase italic flex items-center gap-2">
+                    <UserIcon className="h-5 w-5 text-indigo-650" />
+                    Gathering Organizers
+                  </h3>
+                  
+                  {/* List of current organizers */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Creator */}
+                    <div className="p-3 bg-indigo-50/50 border border-indigo-100 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="h-7 w-7 rounded-full bg-indigo-650 flex items-center justify-center text-xs font-bold text-white uppercase">
+                          {selectedEvent.creatorName.slice(0, 2)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-950">{selectedEvent.creatorName}</p>
+                          <p className="text-[10px] font-bold text-indigo-650 uppercase tracking-wider">Creator & Primary</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Nominated Organizers */}
+                    {Object.entries(selectedEvent.organizers || {}).map(([uid, orgInfo]) => {
+                      if (uid === selectedEvent.createdBy) return null; // Already rendered above
+                      return (
+                        <div key={uid} className="p-3 bg-gray-50 border border-gray-150 rounded-lg flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="h-7 w-7 rounded-full bg-gray-650 flex items-center justify-center text-xs font-bold text-white uppercase">
+                              {orgInfo.name.slice(0, 2)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-gray-800">{orgInfo.name}</p>
+                              <p className="text-[10px] font-medium text-gray-400">Nominated Organizer</p>
+                            </div>
+                          </div>
+                          {isAuthenticated && isOrganizer(selectedEvent, user?.userId) && (
+                            <button
+                              onClick={() => handleRemoveOrganizer(uid)}
+                              className="text-gray-400 hover:text-red-650 p-1 transition-colors rounded hover:bg-gray-100"
+                              title="Remove Organizer"
+                            >
+                              <XMarkIcon className="h-4.5 w-4.5" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Nominate form - only visible to organizers */}
+                  {isAuthenticated && isOrganizer(selectedEvent, user?.userId) && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
+                        Nominate Other Organizer
+                      </h4>
+                      {loadingMembers ? (
+                        <p className="text-xs text-gray-500">Loading club members...</p>
+                      ) : (
+                        <div className="flex flex-col sm:flex-row gap-2">
+                          <select
+                            id="nominate-member-select"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-sm text-gray-900 bg-white"
+                            defaultValue=""
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val) {
+                                const parts = val.split('|');
+                                handleNominateOrganizer(parts[0], parts[1]);
+                                e.target.value = ""; // Reset
+                              }
+                            }}
+                          >
+                            <option value="" disabled>Select a club member to nominate...</option>
+                            {clubMembers
+                              .filter(member => {
+                                // Filter out members who are already organizers
+                                const isAlreadyOrg = member.userId === selectedEvent.createdBy || 
+                                                     !!(selectedEvent.organizers && selectedEvent.organizers[member.userId]);
+                                return !isAlreadyOrg && member.status === 'active';
+                              })
+                              .map(member => (
+                                <option key={member.userId} value={`${member.userId}|${member.name || 'Anonymous'}`}>
+                                  {member.name || 'Anonymous'} ({member.email})
+                                </option>
+                              ))
+                            }
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* RSVP Details Card - Only for Organizers */}
+                {isAuthenticated && isOrganizer(selectedEvent, user?.userId) && (
+                  <div className="bg-white border border-gray-200 rounded-lg p-6 sm:p-8 space-y-4 shadow-sm text-left">
+                    <div>
+                      <h3 className="text-lg font-black text-gray-900 tracking-tight uppercase italic flex items-center gap-2">
+                        <CheckIcon className="h-5 w-5 text-indigo-650" />
+                        Attendee Details
+                      </h3>
+                      <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mt-1">Visible only to Gathering Organizers</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                      {/* Going Column */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-650 border-b border-indigo-100 pb-1.5 flex items-center justify-between">
+                          <span>Going</span>
+                          <span className="bg-indigo-50 px-2 py-0.5 rounded-full text-indigo-700 font-black text-[10px]">
+                            {Object.values(selectedEvent.rsvps || {}).filter(r => r.status === 'going').length}
+                          </span>
+                        </h4>
+                        <ul className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                          {Object.values(selectedEvent.rsvps || {}).filter(r => r.status === 'going').length === 0 ? (
+                            <li className="text-xs text-gray-400 italic">No one yet</li>
+                          ) : (
+                            Object.entries(selectedEvent.rsvps || {})
+                              .filter(([_, r]) => r.status === 'going')
+                              .map(([uid, r]) => (
+                                <li key={uid} className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded">
+                                  <div className="h-6 w-6 rounded-full bg-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-700 uppercase">
+                                    {r.name.slice(0, 2)}
+                                  </div>
+                                  <span className="text-xs font-semibold text-gray-800 truncate">{r.name}</span>
+                                </li>
+                              ))
+                          )}
+                        </ul>
+                      </div>
+
+                      {/* Interested Column */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-purple-600 border-b border-purple-100 pb-1.5 flex items-center justify-between">
+                          <span>Interested</span>
+                          <span className="bg-purple-50 px-2 py-0.5 rounded-full text-purple-700 font-black text-[10px]">
+                            {Object.values(selectedEvent.rsvps || {}).filter(r => r.status === 'interested').length}
+                          </span>
+                        </h4>
+                        <ul className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                          {Object.values(selectedEvent.rsvps || {}).filter(r => r.status === 'interested').length === 0 ? (
+                            <li className="text-xs text-gray-400 italic">No one yet</li>
+                          ) : (
+                            Object.entries(selectedEvent.rsvps || {})
+                              .filter(([_, r]) => r.status === 'interested')
+                              .map(([uid, r]) => (
+                                <li key={uid} className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded">
+                                  <div className="h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-700 uppercase">
+                                    {r.name.slice(0, 2)}
+                                  </div>
+                                  <span className="text-xs font-semibold text-gray-800 truncate">{r.name}</span>
+                                </li>
+                              ))
+                          )}
+                        </ul>
+                      </div>
+
+                      {/* Not Going Column */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 border-b border-gray-200 pb-1.5 flex items-center justify-between">
+                          <span>Not Going</span>
+                          <span className="bg-gray-100 px-2 py-0.5 rounded-full text-gray-600 font-black text-[10px]">
+                            {Object.values(selectedEvent.rsvps || {}).filter(r => r.status === 'not_going').length}
+                          </span>
+                        </h4>
+                        <ul className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                          {Object.values(selectedEvent.rsvps || {}).filter(r => r.status === 'not_going').length === 0 ? (
+                            <li className="text-xs text-gray-400 italic">No one yet</li>
+                          ) : (
+                            Object.entries(selectedEvent.rsvps || {})
+                              .filter(([_, r]) => r.status === 'not_going')
+                              .map(([uid, r]) => (
+                                <li key={uid} className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded">
+                                  <div className="h-6 w-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] font-bold text-gray-700 uppercase">
+                                    {r.name.slice(0, 2)}
+                                  </div>
+                                  <span className="text-xs font-semibold text-gray-750 truncate">{r.name}</span>
+                                </li>
+                              ))
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right Column: Chat Section */}

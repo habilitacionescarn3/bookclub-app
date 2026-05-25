@@ -35,6 +35,7 @@ jest.mock('../../services/api', () => ({
     createEvent: jest.fn(),
     updateEvent: jest.fn(),
     deleteEvent: jest.fn(),
+    listMembers: jest.fn(),
   },
 }));
 
@@ -98,6 +99,7 @@ describe('ClubEvents Page Component', () => {
     (apiService.getUserClubs as jest.Mock).mockResolvedValue(dummyClubsList);
     (apiService.getClub as jest.Mock).mockResolvedValue(dummyClub);
     (apiService.listEvents as jest.Mock).mockResolvedValue([dummyEvent]);
+    (apiService.listMembers as jest.Mock).mockResolvedValue({ items: [] });
   });
 
   it('renders loading spinner initially', () => {
@@ -353,7 +355,7 @@ describe('ClubEvents Page Component', () => {
     expect(dateTimeInput.value).toContain('T19:00');
   });
 
-  it('does not show Edit/Delete buttons to a non-creator', async () => {
+  it('does not show Edit button, organizers list nominate section, or RSVP lists to a non-organizer', async () => {
     render(
       <TestWrapper>
         <ClubEvents />
@@ -365,6 +367,39 @@ describe('ClubEvents Page Component', () => {
 
     expect(screen.queryByRole('button', { name: /edit gathering/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /delete gathering/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /attendee details/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(/nominate other organizer/i)).not.toBeInTheDocument();
+  });
+
+  it('shows Edit button, Nominate Organizer section, and RSVP details lists to an organizer', async () => {
+    const organizersEvent = {
+      ...dummyEvent,
+      organizers: {
+        'u-1': { name: 'Maddy Testing', nominatedAt: new Date().toISOString() }
+      }
+    };
+    (apiService.listEvents as jest.Mock).mockResolvedValue([organizersEvent]);
+    (apiService.listMembers as jest.Mock).mockResolvedValue({
+      items: [
+        { userId: 'u-1', name: 'Maddy Testing', email: 'maddy@test.com', status: 'active' },
+        { userId: 'u-member-1', name: 'Bob Member', email: 'bob@member.com', status: 'active' }
+      ]
+    });
+
+    render(
+      <TestWrapper>
+        <ClubEvents />
+      </TestWrapper>
+    );
+
+    const eventCard = await screen.findByText('Reading Dune: Part 1');
+    fireEvent.click(eventCard);
+
+    expect(screen.getByRole('button', { name: /edit gathering/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /attendee details/i })).toBeInTheDocument();
+    expect(screen.getByText(/nominate other organizer/i)).toBeInTheDocument();
+    // Await the asynchronous member list fetch to prevent act() warnings
+    expect(await screen.findByText(/Bob Member/i)).toBeInTheDocument();
   });
 
   it('shows Edit/Delete buttons to the event creator', async () => {

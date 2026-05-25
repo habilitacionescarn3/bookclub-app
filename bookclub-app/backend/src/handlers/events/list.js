@@ -23,6 +23,16 @@ const handler = async (event) => {
     return response.forbidden('You must be a member of the club to view events');
   }
 
+  const qs = event.queryStringParameters || {};
+  const limitRaw = qs.limit;
+  const limit = limitRaw != null ? Math.min(Math.max(parseInt(limitRaw, 10) || 0, 1), 200) : null;
+  const nextToken = qs.nextToken || undefined;
+
+  if (limit != null) {
+    const page = await Event.listByClub(clubId, { limit, nextToken });
+    return response.success(page);
+  }
+
   const events = await Event.listByClub(clubId);
   return response.success(events);
 };

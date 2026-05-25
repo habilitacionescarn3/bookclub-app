@@ -88,6 +88,41 @@ describe('events.list handler', () => {
     expect(Event.listByClub).toHaveBeenCalledWith('club-1');
   });
 
+  it('passes limit and nextToken to the model and returns paginated shape', async () => {
+    const event = {
+      pathParameters: { clubId: 'club-1' },
+      queryStringParameters: { limit: '50', nextToken: 'abc' },
+      userId: 'user-1',
+      currentUser: { userId: 'user-1', name: 'Alice' },
+    };
+
+    const page = { items: [{ eventId: 'e1' }], nextToken: 'def' };
+    BookClub.isClubMember.mockResolvedValue(true);
+    BookClub.getById.mockResolvedValue({ clubId: 'club-1', createdBy: 'user-1' });
+    Event.listByClub.mockResolvedValue(page);
+
+    const res = await handler(event);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).data).toEqual(page);
+    expect(Event.listByClub).toHaveBeenCalledWith('club-1', { limit: 50, nextToken: 'abc' });
+  });
+
+  it('clamps limit to a sane maximum (200)', async () => {
+    const event = {
+      pathParameters: { clubId: 'club-1' },
+      queryStringParameters: { limit: '9999' },
+      userId: 'user-1',
+      currentUser: { userId: 'user-1', name: 'Alice' },
+    };
+
+    BookClub.isClubMember.mockResolvedValue(true);
+    BookClub.getById.mockResolvedValue({ clubId: 'club-1', createdBy: 'user-1' });
+    Event.listByClub.mockResolvedValue({ items: [], nextToken: null });
+
+    await handler(event);
+    expect(Event.listByClub).toHaveBeenCalledWith('club-1', { limit: 200, nextToken: undefined });
+  });
+
   it('returns 200 and list of events when user is not a member but is the creator', async () => {
     const event = {
       pathParameters: { clubId: 'club-1' },
