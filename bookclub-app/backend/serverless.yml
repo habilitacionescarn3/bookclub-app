@@ -1875,9 +1875,7 @@ resources:
 
     UserPoolClient:
       Type: AWS::Cognito::UserPoolClient
-      DependsOn:
-        - GoogleIdentityProvider
-        - BookClubIdentityProvider
+      DependsOn: GoogleIdentityProvider
       DeletionPolicy: Retain
       UpdateReplacePolicy: Retain
       Properties:
@@ -1896,7 +1894,6 @@ resources:
           - openid
           - profile
         SupportedIdentityProviders:
-          - BookClub
           - Google
         AccessTokenValidity: 1
         IdTokenValidity: 1
@@ -1928,27 +1925,6 @@ resources:
           email: email
           given_name: given_name
           family_name: family_name
-          name: name
-          username: sub
-
-    BookClubIdentityProvider:
-      Type: AWS::CloudFormation::CustomResource
-      DeletionPolicy: Retain
-      UpdateReplacePolicy: Retain
-      Properties:
-        ServiceToken: !GetAtt CognitoResourceManagerLambdaFunction.Arn
-        Action: CreateOrUpdateIdentityProvider
-        UserPoolId: !Ref UserPool
-        ProviderName: BookClub
-        ProviderType: OIDC
-        ProviderDetails:
-          client_id: ${env:BOOKCLUB_CLIENT_ID, ''}
-          client_secret: ${env:BOOKCLUB_CLIENT_SECRET, ''}
-          attributes_request_method: GET
-          oidc_issuer: https://cognito-idp.us-east-1.amazonaws.com/${env:BOOKCLUB_USER_POOL_ID, 'us-east-1_placeholder'}
-          authorize_scopes: "openid email profile"
-        AttributeMapping:
-          email: email
           name: name
           username: sub
 
