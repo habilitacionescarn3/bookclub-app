@@ -79,9 +79,9 @@ jobs:
           USER_POOL_CLIENT_ID=${COGNITO_CLIENT_ID:-$(npx serverless info --stage prod --verbose | grep "UserPoolClientId:" | awk '{print $2}')}
           cd ../frontend
           
-          # Default to us-east-1 defaults or provided overrides
-          COGNITO_REGION_VAL=${COGNITO_REGION:-"us-east-1"}
-          COGNITO_DOMAIN_VAL=${COGNITO_DOMAIN:-"booklub-au-prod.auth.us-east-1.amazoncognito.com"}
+          # Default to ap-south-1 defaults or provided overrides
+          COGNITO_REGION_VAL=${COGNITO_REGION:-"ap-south-1"}
+          COGNITO_DOMAIN_VAL=${COGNITO_DOMAIN:-"townwink-india-prod.auth.ap-south-1.amazoncognito.com"}
           
           # Create .env.production
           cat > .env.production << EOF
