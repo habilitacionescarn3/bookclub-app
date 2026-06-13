@@ -5,7 +5,7 @@ describe('OAuth Configuration', () => {
   let yamlContent;
 
   beforeAll(() => {
-    const serverlessPath = path.join(__dirname, '../../serverless.yml');
+    const serverlessPath = path.join(__dirname, '../../serverless-cognito.yml');
     yamlContent = fs.readFileSync(serverlessPath, 'utf8');
   });
 

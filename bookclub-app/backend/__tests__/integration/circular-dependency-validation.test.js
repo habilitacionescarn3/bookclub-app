@@ -7,10 +7,13 @@ const path = require('path');
 
 describe('Serverless Configuration - Circular Dependency Validation', () => {
   let serverlessConfigContent;
+  let cognitoConfigContent;
 
   beforeAll(() => {
     const configPath = path.join(__dirname, '../../serverless.yml');
     serverlessConfigContent = fs.readFileSync(configPath, 'utf8');
+    const cognitoPath = path.join(__dirname, '../../serverless-cognito.yml');
+    cognitoConfigContent = fs.readFileSync(cognitoPath, 'utf8');
   });
 
   test('should use custom resource for S3 bucket to handle create-if-missing scenario', () => {
@@ -24,7 +27,7 @@ describe('Serverless Configuration - Circular Dependency Validation', () => {
 
   test('should not reference missing functions', () => {
     // Should have all referenced functions properly defined
-    const functions = ['DynamoTableManagerLambdaFunction', 'CognitoResourceManagerLambdaFunction', 'S3BucketManagerLambdaFunction'];
+    const functions = ['DynamoTableManagerLambdaFunction', 'S3BucketManagerLambdaFunction'];
     for (const func of functions) {
       if (serverlessConfigContent.includes(func)) {
         // If function is referenced, it should be defined in functions section
@@ -34,6 +37,10 @@ describe('Serverless Configuration - Circular Dependency Validation', () => {
         expect(serverlessConfigContent).toContain(`${functionName}:`);
       }
     }
+    // Check Cognito functions in Cognito config
+    if (cognitoConfigContent.includes('CognitoResourceManagerLambdaFunction')) {
+      expect(cognitoConfigContent).toContain('cognitoResourceManager:');
+    }
   });
 
   test('should have properly defined custom resource functions', () => {
@@ -41,8 +48,8 @@ describe('Serverless Configuration - Circular Dependency Validation', () => {
     expect(serverlessConfigContent).toContain('dynamoTableManager:');
     expect(serverlessConfigContent).toContain('handler: src/custom-resources/dynamodb-table-manager.handler');
     
-    expect(serverlessConfigContent).toContain('cognitoResourceManager:');
-    expect(serverlessConfigContent).toContain('handler: src/custom-resources/cognito-resource-manager.handler');
+    expect(cognitoConfigContent).toContain('cognitoResourceManager:');
+    expect(cognitoConfigContent).toContain('handler: src/custom-resources/cognito-resource-manager.handler');
 
     expect(serverlessConfigContent).toContain('s3BucketManager:');
     expect(serverlessConfigContent).toContain('handler: src/custom-resources/s3-bucket-manager.handler');
@@ -64,12 +71,12 @@ describe('Serverless Configuration - Circular Dependency Validation', () => {
   test('should have proper IAM roles for custom resources', () => {
     // Custom resource functions should have dedicated IAM roles
     expect(serverlessConfigContent).toContain('DynamoTableManagerRole:');
-    expect(serverlessConfigContent).toContain('CognitoResourceManagerRole:');
+    expect(cognitoConfigContent).toContain('CognitoResourceManagerRole:');
     expect(serverlessConfigContent).toContain('S3BucketManagerRole:');
     
     // Should have proper permissions
     expect(serverlessConfigContent).toContain('DynamoTableManagerInvokePermission:');
-    expect(serverlessConfigContent).toContain('CognitoResourceManagerInvokePermission:');
+    expect(cognitoConfigContent).toContain('CognitoResourceManagerInvokePermission:');
     expect(serverlessConfigContent).toContain('S3BucketManagerInvokePermission:');
   });
 

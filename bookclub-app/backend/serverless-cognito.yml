@@ -1,0 +1,142 @@
+service: bookclub-cognito
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+
+functions:
+  cognitoResourceManager:
+    handler: src/custom-resources/cognito-resource-manager.handler
+    timeout: 300
+    role: CognitoResourceManagerRole
+
+resources:
+  Resources:
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+        UserPoolName: ${self:service}-user-pool-${self:provider.stage}
+        Schema:
+          - Name: email
+            Required: true
+            Mutable: true
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireUppercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+        AutoVerifiedAttributes:
+          - email
+
+    UserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      DependsOn:
+        - GoogleIdentityProvider
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+        ClientName: ${self:service}-client-${self:provider.stage}
+        UserPoolId: !Ref UserPool
+        GenerateSecret: false
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_USER_SRP_AUTH
+        PreventUserExistenceErrors: ENABLED
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthFlows:
+          - code
+        AllowedOAuthScopes:
+          - email
+          - openid
+          - profile
+        SupportedIdentityProviders:
+          - Google
+        AccessTokenValidity: 1
+        IdTokenValidity: 1
+        RefreshTokenValidity: 365
+        TokenValidityUnits:
+          AccessToken: days
+          IdToken: days
+          RefreshToken: days
+        CallbackURLs:
+          - ${env:OAUTH_REDIRECT_SIGNIN, 'http://localhost:3000/auth/callback'}
+        LogoutURLs:
+          - ${env:OAUTH_REDIRECT_SIGNOUT, 'http://localhost:3000/'}
+
+    GoogleIdentityProvider:
+      Type: AWS::CloudFormation::CustomResource
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+        ServiceToken: !GetAtt CognitoResourceManagerLambdaFunction.Arn
+        Action: CreateOrUpdateIdentityProvider
+        UserPoolId: !Ref UserPool
+        ProviderName: Google
+        ProviderType: Google
+        ProviderDetails:
+          client_id: ${env:GOOGLE_CLIENT_ID, ''}
+          client_secret: ${env:GOOGLE_CLIENT_SECRET, ''}
+          authorize_scopes: "openid email profile"
+        AttributeMapping:
+          email: email
+          given_name: given_name
+          family_name: family_name
+          name: name
+          username: sub
+
+    UserPoolDomain:
+      Type: AWS::Cognito::UserPoolDomain
+      DeletionPolicy: Retain
+      UpdateReplacePolicy: Retain
+      Properties:
+        Domain: ${env:USER_POOL_DOMAIN_PREFIX, 'bookclub-app-dev'}-${self:provider.stage}
+        UserPoolId: !Ref UserPool
+
+    CognitoResourceManagerRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        Policies:
+          - PolicyName: CognitoIdpManager
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - cognito-idp:DescribeIdentityProvider
+                    - cognito-idp:CreateIdentityProvider
+                    - cognito-idp:UpdateIdentityProvider
+                    - cognito-idp:DeleteIdentityProvider
+                  Resource: "*"
+
+    CognitoResourceManagerInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref CognitoResourceManagerLambdaFunction
+        Principal: cloudformation.amazonaws.com
+
+  Outputs:
+    UserPoolId:
+      Value: !Ref UserPool
+      Export:
+        Name: ${self:service}-${self:provider.stage}-UserPoolId
+    UserPoolClientId:
+      Value: !Ref UserPoolClient
+      Export:
+        Name: ${self:service}-${self:provider.stage}-UserPoolClientId

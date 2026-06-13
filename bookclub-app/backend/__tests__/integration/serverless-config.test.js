@@ -6,10 +6,13 @@ const path = require('path');
 
 describe('Serverless Configuration', () => {
   let serverlessConfigContent;
+  let cognitoConfigContent;
 
   beforeAll(() => {
     const configPath = path.join(__dirname, '../../serverless.yml');
     serverlessConfigContent = fs.readFileSync(configPath, 'utf8');
+    const cognitoPath = path.join(__dirname, '../../serverless-cognito.yml');
+    cognitoConfigContent = fs.readFileSync(cognitoPath, 'utf8');
   });
 
   test('should have all required DynamoDB tables defined', () => {
@@ -78,14 +81,14 @@ describe('Serverless Configuration', () => {
   });
 
   test('should have Cognito resources defined', () => {
-    expect(serverlessConfigContent).toContain('UserPool:');
-    expect(serverlessConfigContent).toContain('Type: AWS::Cognito::UserPool');
+    expect(cognitoConfigContent).toContain('UserPool:');
+    expect(cognitoConfigContent).toContain('Type: AWS::Cognito::UserPool');
     
-    expect(serverlessConfigContent).toContain('UserPoolClient:');
-    expect(serverlessConfigContent).toContain('Type: AWS::Cognito::UserPoolClient');
+    expect(cognitoConfigContent).toContain('UserPoolClient:');
+    expect(cognitoConfigContent).toContain('Type: AWS::Cognito::UserPoolClient');
     
-    expect(serverlessConfigContent).toContain('UserPoolDomain:');
-    expect(serverlessConfigContent).toContain('Type: AWS::Cognito::UserPoolDomain');
+    expect(cognitoConfigContent).toContain('UserPoolDomain:');
+    expect(cognitoConfigContent).toContain('Type: AWS::Cognito::UserPoolDomain');
   });
 
   test('should have proper table schemas defined', () => {
@@ -213,7 +216,7 @@ describe('Serverless Configuration', () => {
 
     cognitoResourceNames.forEach(resourceName => {
       const resourceDefRegex = new RegExp(`${resourceName}:[\\s\\S]*?Properties:`, 'g');
-      const resourceMatch = serverlessConfigContent.match(resourceDefRegex);
+      const resourceMatch = cognitoConfigContent.match(resourceDefRegex);
       
       expect(resourceMatch).toBeTruthy();
       if (resourceMatch) {
